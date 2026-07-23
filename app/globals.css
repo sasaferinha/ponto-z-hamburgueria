@@ -26,8 +26,8 @@ a { color: inherit; text-decoration: none; }
 .brand { display: flex; align-items: center; gap: 13px; }
 .brand-logo {
   display: block; width: 54px; height: 54px; border-radius: 50%;
-  background-image: url("/assets/instagram-profile.png"); background-repeat: no-repeat;
-  background-size: 286px 96px; background-position: -18px -24px;
+  background-image: url("/assets/logo-ponto-z.png"); background-repeat: no-repeat;
+  background-size: 128%; background-position: center;
   border: 2px solid #ef6b2e; box-shadow: 0 0 0 3px #2a251f;
 }
 .brand strong, .footer-brand strong { display: block; font-size: 19px; letter-spacing: -.02em; }
@@ -94,7 +94,7 @@ footer > div:not(.footer-brand) { display: flex; flex-direction: column; gap: 9p
 footer > div b { color: white; font-size: 12px; text-transform: uppercase; letter-spacing: .1em; }
 footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 .footer-brand { display: flex; gap: 15px; align-items: center; }
-.brand-logo.small { width: 48px; height: 48px; background-size: 254px 85px; background-position: -16px -21px; }
+.brand-logo.small { width: 48px; height: 48px; background-size: 128%; background-position: center; }
 
 .floating-cart { display: none; position: fixed; z-index: 25; bottom: 14px; left: 14px; right: 14px; border: 0; border-radius: 14px; padding: 15px 17px; background: var(--orange); color: white; align-items: center; justify-content: space-between; box-shadow: 0 12px 35px rgba(78, 32, 10, .35); cursor: pointer; }
 .floating-cart span { font-size: 12px; }
@@ -165,7 +165,7 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 
 @media (max-width: 620px) {
   .topbar { height: 70px; padding: 0 15px; }
-  .brand-logo { width: 44px; height: 44px; background-size: 233px 78px; background-position: -14px -19px; }
+  .brand-logo { width: 44px; height: 44px; background-size: 128%; background-position: center; }
   .brand strong { font-size: 16px; }
   .brand small, .header-actions > a { display: none; }
   .cart-button { padding: 8px 9px 8px 14px; }
