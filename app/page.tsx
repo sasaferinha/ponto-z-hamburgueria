@@ -140,7 +140,7 @@ export default function Home() {
       (item) => `• ${item.quantity}x ${item.name} — ${money(item.price * item.quantity)}`,
     );
     const message = [
-      "Olá, Ponto Z! Quero fazer um pedido:",
+      "Olá, Hamburgueria Ponto Z! Quero fazer um pedido:",
       "",
       ...lines,
       "",
@@ -167,10 +167,10 @@ export default function Home() {
   return (
     <main>
       <header className="topbar">
-        <a className="brand" href="#inicio" aria-label="Ponto Z - início">
+        <a className="brand" href="#inicio" aria-label="Hamburgueria Ponto Z - início">
           <span className="brand-logo" aria-hidden="true" />
           <span>
-            <strong>Ponto Z</strong>
+            <strong>Hamburgueria Ponto Z</strong>
             <small>Hamburgueria tradicional</small>
           </span>
         </a>
@@ -194,7 +194,7 @@ export default function Home() {
             <span><b>Pedidos</b> (35) 99724-0245</span>
           </div>
         </div>
-        <div className="hero-art" aria-label="Hambúrguer artesanal da Ponto Z">
+        <div className="hero-art" aria-label="Hambúrguer artesanal da Hamburgueria Ponto Z">
           <div className="hero-photo" role="img" aria-label="Hambúrguer com queijo, bacon, alface e tomate" />
         </div>
       </section>
@@ -258,7 +258,7 @@ export default function Home() {
       <footer>
         <div className="footer-brand">
           <span className="brand-logo small" aria-hidden="true" />
-          <div><strong>Ponto Z Hamburgueria</strong><small>Tradição em cada mordida.</small></div>
+          <div><strong>Hamburgueria Ponto Z</strong><small>Tradição em cada mordida.</small></div>
         </div>
         <div>
           <b>Faça seu pedido</b>
