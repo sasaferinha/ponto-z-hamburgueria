@@ -88,6 +88,12 @@ const products: Product[] = [
 const money = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
+const drinkRecommendations = products.filter(
+  (product) =>
+    product.category === "bebidas" &&
+    ["Refrigerante 350ml", "Coca-Cola 2L", "Suco Tial"].includes(product.name),
+);
+
 export default function Home() {
   const [active, setActive] = useState("padrao");
   const [search, setSearch] = useState("");
@@ -142,6 +148,11 @@ export default function Home() {
     window.open(`https://wa.me/5535997240245?text=${encodeURIComponent(message)}`, "_blank");
   };
 
+  const keepShopping = () => {
+    setCartOpen(false);
+    window.setTimeout(() => document.querySelector("#cardapio")?.scrollIntoView({ behavior: "smooth" }), 80);
+  };
+
   const categoryName = search
     ? `Resultados para “${search}”`
     : categories.find((category) => category.id === active)?.label;
@@ -176,15 +187,8 @@ export default function Home() {
             <span><b>☎</b> (35) 99724-0245</span>
           </div>
         </div>
-        <div className="hero-art" aria-label="Hambúrguer ilustrado">
-          <div className="burger">
-            <span className="bun top" />
-            <span className="lettuce" />
-            <span className="cheese" />
-            <span className="patty" />
-            <span className="tomato" />
-            <span className="bun bottom" />
-          </div>
+        <div className="hero-art" aria-label="Hambúrguer artesanal da Ponto Z">
+          <div className="hero-photo" role="img" aria-label="Hambúrguer com queijo, bacon, alface e tomate" />
           <span className="hero-stamp">Feito na<br /><b>chapa</b></span>
         </div>
       </section>
@@ -288,12 +292,39 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+              {quantity > 0 && (
+                <section className="cart-suggestions" aria-labelledby="drink-suggestions-title">
+                  <div className="suggestions-heading">
+                    <div>
+                      <span className="eyebrow dark">Que tal uma bebida?</span>
+                      <h3 id="drink-suggestions-title">Complete seu pedido</h3>
+                    </div>
+                    <span>🥤</span>
+                  </div>
+                  <div className="suggestion-list">
+                    {drinkRecommendations.map((drink) => (
+                      <div className="suggestion-item" key={drink.name}>
+                        <div>
+                          <b>{drink.name}</b>
+                          <span>{money(drink.price)}</span>
+                        </div>
+                        <button onClick={() => add(drink)} aria-label={`Adicionar ${drink.name}`}>
+                          {cart[drink.name] ? `+1 (${cart[drink.name].quantity})` : "Adicionar"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
             </div>
             {quantity > 0 && (
               <div className="drawer-footer">
+                <button className="keep-shopping" onClick={keepShopping}>
+                  <span>＋</span> Adicionar mais itens
+                </button>
                 <div><span>Total dos itens</span><b>{money(total)}</b></div>
                 <small>Taxa de entrega e prazo serão confirmados no WhatsApp.</small>
-                <button onClick={sendOrder}>Enviar pedido no WhatsApp <span>↗</span></button>
+                <button className="whatsapp-order" onClick={sendOrder}>Enviar pedido no WhatsApp <span>↗</span></button>
               </div>
             )}
           </aside>
