@@ -3,13 +3,13 @@
 :root {
   --ink: #15120f;
   --cream: #f5ead8;
-  --paper: #ececea;
-  --surface: #f7f7f5;
-  --surface-soft: #f1f1ee;
+  --paper: #d6d6d3;
+  --surface: #e7e7e3;
+  --surface-soft: #dededa;
   --orange: #ef6b2e;
   --orange-dark: #c84717;
   --gold: #f2b84b;
-  --line: #d7d5d0;
+  --line: #c1c1bc;
 }
 
 * { box-sizing: border-box; }
