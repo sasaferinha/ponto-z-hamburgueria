@@ -10,18 +10,18 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase,
-    title: "Hamburgueria Ponto Z | Cardápio Digital",
-    description: "Peça seu lanche favorito da Hamburgueria Ponto Z pelo WhatsApp. Delivery e retirada em Lavras/MG.",
+    title: "Ponto Z Hamburgueria | Cardápio Digital",
+    description: "Peça seu lanche favorito da Ponto Z pelo WhatsApp. Delivery e retirada em Lavras/MG.",
     openGraph: {
-      title: "Hamburgueria Ponto Z | Cardápio Digital",
+      title: "Ponto Z | Cardápio Digital",
       description: "Escolha seu lanche e envie o pedido direto para o WhatsApp.",
       type: "website",
       locale: "pt_BR",
-      images: [{ url: "/og.png", width: 1734, height: 907, alt: "Hamburgueria Ponto Z - Cardápio Digital" }],
+      images: [{ url: "/og.png", width: 1734, height: 907, alt: "Ponto Z - Cardápio Digital" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Hamburgueria Ponto Z | Cardápio Digital",
+      title: "Ponto Z | Cardápio Digital",
       description: "Escolha seu lanche e envie o pedido direto para o WhatsApp.",
       images: ["/og.png"],
     },
