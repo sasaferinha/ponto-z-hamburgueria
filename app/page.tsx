@@ -99,6 +99,9 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [cartOpen, setCartOpen] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [orderMode, setOrderMode] = useState<"entrega" | "retirada">("entrega");
+  const [address, setAddress] = useState("");
 
   const visible = useMemo(() => {
     const term = search.trim().toLocaleLowerCase("pt-BR");
@@ -141,8 +144,8 @@ export default function Home() {
       "",
       `Total dos itens: ${money(total)}`,
       "",
-      "Nome:",
-      "Endereço ou retirada:",
+      `Nome: ${customerName.trim()}`,
+      orderMode === "entrega" ? `Entrega em: ${address.trim()}` : "Forma de recebimento: Retirada no balcão",
       "Forma de pagamento:",
     ].join("\n");
     window.open(`https://wa.me/5535997240245?text=${encodeURIComponent(message)}`, "_blank");
@@ -322,9 +325,63 @@ export default function Home() {
                 <button className="keep-shopping" onClick={keepShopping}>
                   <span>＋</span> Adicionar mais itens
                 </button>
+                <section className="checkout-details" aria-labelledby="checkout-title">
+                  <div className="checkout-title">
+                    <span className="eyebrow dark">Dados do pedido</span>
+                    <h3 id="checkout-title">Como você quer receber?</h3>
+                  </div>
+                  <label>
+                    <span>Seu nome</span>
+                    <input
+                      value={customerName}
+                      onChange={(event) => setCustomerName(event.target.value)}
+                      placeholder="Digite seu nome"
+                      autoComplete="name"
+                    />
+                  </label>
+                  <div className="order-mode" role="group" aria-label="Forma de recebimento">
+                    <button
+                      className={orderMode === "entrega" ? "selected" : ""}
+                      onClick={() => setOrderMode("entrega")}
+                    >
+                      <span>🛵</span>
+                      <b>Entrega</b>
+                      <small>Receber em casa</small>
+                    </button>
+                    <button
+                      className={orderMode === "retirada" ? "selected" : ""}
+                      onClick={() => setOrderMode("retirada")}
+                    >
+                      <span>🏪</span>
+                      <b>Retirada</b>
+                      <small>Buscar no balcão</small>
+                    </button>
+                  </div>
+                  {orderMode === "entrega" && (
+                    <label>
+                      <span>Endereço para entrega</span>
+                      <textarea
+                        value={address}
+                        onChange={(event) => setAddress(event.target.value)}
+                        placeholder="Rua, número, bairro e complemento"
+                        autoComplete="street-address"
+                        rows={2}
+                      />
+                    </label>
+                  )}
+                </section>
                 <div><span>Total dos itens</span><b>{money(total)}</b></div>
                 <small>Taxa de entrega e prazo serão confirmados no WhatsApp.</small>
-                <button className="whatsapp-order" onClick={sendOrder}>Enviar pedido no WhatsApp <span>↗</span></button>
+                <button
+                  className="whatsapp-order"
+                  onClick={sendOrder}
+                  disabled={!customerName.trim() || (orderMode === "entrega" && !address.trim())}
+                >
+                  Enviar pedido no WhatsApp <span>↗</span>
+                </button>
+                {(!customerName.trim() || (orderMode === "entrega" && !address.trim())) && (
+                  <p className="form-hint">Preencha seu nome{orderMode === "entrega" ? " e endereço" : ""} para continuar.</p>
+                )}
               </div>
             )}
           </aside>

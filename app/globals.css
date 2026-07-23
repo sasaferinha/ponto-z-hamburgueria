@@ -135,6 +135,24 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 .drawer-footer .keep-shopping { border: 1px solid var(--line); background: white; color: var(--orange-dark); display: flex; justify-content: center; align-items: center; gap: 7px; margin-bottom: 18px; }
 .drawer-footer .keep-shopping span { color: var(--orange); font-size: 20px; line-height: 1; }
 .drawer-footer .whatsapp-order { border: 0; background: #1fa855; color: white; padding: 16px 18px; display: flex; justify-content: space-between; }
+.drawer-footer .whatsapp-order:disabled { background: #aab7ae; cursor: not-allowed; }
+.checkout-details { padding: 2px 0 22px; margin-bottom: 19px; border-bottom: 1px solid var(--line); }
+.checkout-title { margin-bottom: 15px; }
+.checkout-title h3 { margin: 4px 0 0; font-size: 20px; letter-spacing: -.03em; }
+.checkout-details label { display: grid; gap: 7px; margin-top: 13px; }
+.checkout-details label > span { color: #5f564e; font-weight: 800; font-size: 12px; }
+.checkout-details input, .checkout-details textarea {
+  width: 100%; border: 1px solid var(--line); border-radius: 11px; background: white; color: var(--ink);
+  padding: 12px 13px; outline: 0; resize: none; font-size: 14px;
+}
+.checkout-details input:focus, .checkout-details textarea:focus { border-color: var(--orange); box-shadow: 0 0 0 3px #fff0e8; }
+.order-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 13px; }
+.order-mode button { border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); padding: 12px; text-align: left; cursor: pointer; display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; }
+.order-mode button > span { grid-row: 1 / 3; font-size: 22px; }
+.order-mode button b { font-size: 13px; }
+.order-mode button small { color: #81776d; font-size: 10px; margin: 2px 0 0; }
+.order-mode button.selected { border-color: var(--orange); background: #fff4ed; box-shadow: inset 0 0 0 1px var(--orange); }
+.form-hint { color: #936143; font-size: 11px; line-height: 1.4; text-align: center; margin: 9px 0 0; }
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; background: linear-gradient(145deg, #1a1612 0 72%, #ef6b2e 72%); padding-bottom: 40px; }
