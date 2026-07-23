@@ -52,7 +52,7 @@ a { color: inherit; text-decoration: none; }
 .hero-art { position: relative; display: grid; place-items: center; min-height: 330px; }
 .hero-photo {
   width: min(520px, 42vw); aspect-ratio: 1.08; border-radius: 52% 48% 45% 55% / 45% 50% 50% 55%;
-  background: url("/og.png") 76% center / 190% auto no-repeat;
+  background: url("/og.png") 100% center / 190% auto no-repeat;
   filter: drop-shadow(0 36px 24px rgba(61, 22, 3, .38)); transform: rotate(-3deg);
   border: 7px solid rgba(255, 226, 166, .18); box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
 }
