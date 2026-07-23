@@ -101,7 +101,9 @@ export default function Home() {
   const [cartOpen, setCartOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [orderMode, setOrderMode] = useState<"entrega" | "retirada">("entrega");
-  const [address, setAddress] = useState("");
+  const [neighborhood, setNeighborhood] = useState("");
+  const [street, setStreet] = useState("");
+  const [addressDetails, setAddressDetails] = useState("");
 
   const visible = useMemo(() => {
     const term = search.trim().toLocaleLowerCase("pt-BR");
@@ -145,7 +147,9 @@ export default function Home() {
       `Total dos itens: ${money(total)}`,
       "",
       `Nome: ${customerName.trim()}`,
-      orderMode === "entrega" ? `Entrega em: ${address.trim()}` : "Forma de recebimento: Retirada no balcão",
+      orderMode === "entrega"
+        ? `Entrega em: ${street.trim()}, ${addressDetails.trim() || "sem número informado"} - Bairro ${neighborhood.trim()}`
+        : "Forma de recebimento: Retirada no balcão",
       "Forma de pagamento:",
     ].join("\n");
     window.open(`https://wa.me/5535997240245?text=${encodeURIComponent(message)}`, "_blank");
@@ -358,29 +362,59 @@ export default function Home() {
                     </button>
                   </div>
                   {orderMode === "entrega" && (
-                    <label>
-                      <span>Endereço para entrega</span>
-                      <textarea
-                        value={address}
-                        onChange={(event) => setAddress(event.target.value)}
-                        placeholder="Rua, número, bairro e complemento"
-                        autoComplete="street-address"
-                        rows={2}
-                      />
-                    </label>
+                    <div className="address-fields">
+                      <label>
+                        <span>Seu bairro</span>
+                        <input
+                          value={neighborhood}
+                          onChange={(event) => setNeighborhood(event.target.value)}
+                          placeholder="Digite o bairro"
+                          autoComplete="address-level3"
+                        />
+                      </label>
+                      <label>
+                        <span>Sua rua</span>
+                        <input
+                          value={street}
+                          onChange={(event) => setStreet(event.target.value)}
+                          placeholder="Digite o nome da rua"
+                          autoComplete="address-line1"
+                        />
+                      </label>
+                      <label>
+                        <span>Número e complemento</span>
+                        <input
+                          value={addressDetails}
+                          onChange={(event) => setAddressDetails(event.target.value)}
+                          placeholder="Ex.: 509, casa 2"
+                          autoComplete="address-line2"
+                        />
+                      </label>
+                      <p className="delivery-notice">O valor da entrega será informado no WhatsApp.</p>
+                    </div>
                   )}
                 </section>
                 <div><span>Total dos itens</span><b>{money(total)}</b></div>
-                <small>Taxa de entrega e prazo serão confirmados no WhatsApp.</small>
+                <small>
+                  {orderMode === "entrega"
+                    ? "O valor da entrega e o prazo serão informados no WhatsApp."
+                    : "O prazo para retirada será confirmado no WhatsApp."}
+                </small>
                 <button
                   className="whatsapp-order"
                   onClick={sendOrder}
-                  disabled={!customerName.trim() || (orderMode === "entrega" && !address.trim())}
+                  disabled={
+                    !customerName.trim() ||
+                    (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))
+                  }
                 >
                   Enviar pedido no WhatsApp <span>↗</span>
                 </button>
-                {(!customerName.trim() || (orderMode === "entrega" && !address.trim())) && (
-                  <p className="form-hint">Preencha seu nome{orderMode === "entrega" ? " e endereço" : ""} para continuar.</p>
+                {(!customerName.trim() ||
+                  (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))) && (
+                  <p className="form-hint">
+                    Preencha seu nome{orderMode === "entrega" ? ", bairro e rua" : ""} para continuar.
+                  </p>
                 )}
               </div>
             )}
