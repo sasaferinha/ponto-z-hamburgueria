@@ -195,7 +195,9 @@ export default function Home() {
           </div>
         </div>
         <div className="hero-art" aria-label="Hambúrguer artesanal da Ponto Z">
-          <div className="hero-photo" role="img" aria-label="Hambúrguer com queijo, bacon, alface e tomate" />
+          <div className="hero-photo">
+            <img src="/og.png" alt="Hambúrguer com queijo, bacon, alface e tomate" />
+          </div>
         </div>
       </section>
 
