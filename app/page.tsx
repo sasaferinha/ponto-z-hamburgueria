@@ -13,13 +13,13 @@ type Product = {
 type CartItem = Product & { quantity: number };
 
 const categories = [
-  { id: "padrao", label: "Tradicionais", icon: "🍔" },
-  { id: "frango", label: "Frango", icon: "🍗" },
-  { id: "artesanal", label: "Artesanais", icon: "🔥" },
-  { id: "lombo", label: "Lombo", icon: "🥩" },
-  { id: "especiais", label: "Especiais", icon: "⭐" },
-  { id: "adicionais", label: "Adicionais", icon: "➕" },
-  { id: "bebidas", label: "Bebidas", icon: "🥤" },
+  { id: "padrao", label: "Tradicionais" },
+  { id: "frango", label: "Frango" },
+  { id: "artesanal", label: "Artesanais" },
+  { id: "lombo", label: "Lombo" },
+  { id: "especiais", label: "Especiais" },
+  { id: "adicionais", label: "Adicionais" },
+  { id: "bebidas", label: "Bebidas" },
 ];
 
 const base = "Molho da casa, batata palha";
@@ -190,13 +190,12 @@ export default function Home() {
           <h1>Seu lanche favorito está a poucos cliques.</h1>
           <p>Escolha, monte sua sacola e envie o pedido direto para o nosso WhatsApp.</p>
           <div className="hero-meta">
-            <span><b>📍</b> Jd. Glória, Lavras</span>
-            <span><b>☎</b> (35) 99724-0245</span>
+            <span><b>Local</b> Jd. Glória, Lavras</span>
+            <span><b>Pedidos</b> (35) 99724-0245</span>
           </div>
         </div>
         <div className="hero-art" aria-label="Hambúrguer artesanal da Ponto Z">
           <div className="hero-photo" role="img" aria-label="Hambúrguer com queijo, bacon, alface e tomate" />
-          <span className="hero-stamp">Feito na<br /><b>chapa</b></span>
         </div>
       </section>
 
@@ -213,7 +212,6 @@ export default function Home() {
             <h2>O que vai ser hoje?</h2>
           </div>
           <label className="search">
-            <span>⌕</span>
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -230,7 +228,7 @@ export default function Home() {
               className={active === category.id && !search ? "active" : ""}
               onClick={() => { setActive(category.id); setSearch(""); }}
             >
-              <span>{category.icon}</span>{category.label}
+              {category.label}
             </button>
           ))}
         </nav>
@@ -288,7 +286,7 @@ export default function Home() {
             </div>
             <div className="cart-list">
               {quantity === 0 ? (
-                <div className="empty-cart"><span>🍔</span><h3>Sua sacola está vazia</h3><p>Adicione seus favoritos para começar.</p></div>
+                <div className="empty-cart"><span>PZ</span><h3>Sua sacola está vazia</h3><p>Adicione seus favoritos para começar.</p></div>
               ) : Object.values(cart).map((item) => (
                 <div className="cart-item" key={item.name}>
                   <div><b>{item.name}</b><span>{money(item.price)}</span></div>
@@ -306,7 +304,6 @@ export default function Home() {
                       <span className="eyebrow dark">Que tal uma bebida?</span>
                       <h3 id="drink-suggestions-title">Complete seu pedido</h3>
                     </div>
-                    <span>🥤</span>
                   </div>
                   <div className="suggestion-list">
                     {drinkRecommendations.map((drink) => (
@@ -348,7 +345,7 @@ export default function Home() {
                       className={orderMode === "entrega" ? "selected" : ""}
                       onClick={() => setOrderMode("entrega")}
                     >
-                      <span>🛵</span>
+                      <span className="mode-mark">E</span>
                       <b>Entrega</b>
                       <small>Receber em casa</small>
                     </button>
@@ -356,7 +353,7 @@ export default function Home() {
                       className={orderMode === "retirada" ? "selected" : ""}
                       onClick={() => setOrderMode("retirada")}
                     >
-                      <span>🏪</span>
+                      <span className="mode-mark">R</span>
                       <b>Retirada</b>
                       <small>Buscar no balcão</small>
                     </button>
