@@ -200,7 +200,7 @@ export default function Home() {
       </section>
 
       <section className="store-strip">
-        <div><span className="status-dot" /><b>Consulte o horário</b><small>Pedidos pelo WhatsApp</small></div>
+        <div><span className="status-dot" /><b>Horário de funcionamento</b><small>18h às 00h · Pedidos pelo WhatsApp</small></div>
         <div><b>Delivery e retirada</b><small>Confirme prazo e taxa no pedido</small></div>
         <div><b>Rua Evaristo Gomes Guerra, 509</b><small>Jardim Glória · Lavras/MG</small></div>
       </section>
