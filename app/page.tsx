@@ -10,7 +10,8 @@ type Product = {
   badge?: string;
 };
 
-type CartItem = Product & { quantity: number };
+type AddOn = { name: string; price: number };
+type CartItem = Product & { id: string; quantity: number; addOns: AddOn[] };
 
 const categories = [
   { id: "padrao", label: "Tradicionais" },
@@ -88,6 +89,12 @@ const products: Product[] = [
 const money = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
+const addOns: AddOn[] = products
+  .filter((product) => product.category === "adicionais")
+  .map(({ name, price }) => ({ name, price }));
+
+const customizableCategories = new Set(["padrao", "frango", "artesanal", "lombo", "especiais"]);
+
 const drinkRecommendations = products.filter(
   (product) =>
     product.category === "bebidas" &&
@@ -99,6 +106,8 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [cartOpen, setCartOpen] = useState(false);
+  const [customizing, setCustomizing] = useState<Product | null>(null);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [customerName, setCustomerName] = useState("");
   const [orderMode, setOrderMode] = useState<"entrega" | "retirada">("entrega");
   const [neighborhood, setNeighborhood] = useState("");
@@ -115,30 +124,76 @@ export default function Home() {
   }, [active, search]);
 
   const quantity = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-  const total = Object.values(cart).reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = Object.values(cart).reduce(
+    (sum, item) => sum + (item.price + item.addOns.reduce((extras, addOn) => extras + addOn.price, 0)) * item.quantity,
+    0,
+  );
 
-  const add = (product: Product) => {
+  const addDirect = (product: Product) => {
     setCart((current) => ({
       ...current,
-      [product.name]: { ...product, quantity: (current[product.name]?.quantity ?? 0) + 1 },
+      [product.name]: {
+        ...product,
+        id: product.name,
+        addOns: [],
+        quantity: (current[product.name]?.quantity ?? 0) + 1,
+      },
     }));
   };
 
-  const change = (name: string, delta: number) => {
+  const startAdd = (product: Product) => {
+    if (!customizableCategories.has(product.category)) {
+      addDirect(product);
+      return;
+    }
+    setSelectedAddOns([]);
+    setCustomizing(product);
+  };
+
+  const toggleAddOn = (name: string) => {
+    setSelectedAddOns((current) =>
+      current.includes(name) ? current.filter((item) => item !== name) : [...current, name],
+    );
+  };
+
+  const confirmCustomizedProduct = () => {
+    if (!customizing) return;
+    const extras = addOns.filter((addOn) => selectedAddOns.includes(addOn.name));
+    const signature = extras.map((addOn) => addOn.name).sort().join("+") || "sem-adicional";
+    const id = `${customizing.name}::${signature}`;
+    setCart((current) => ({
+      ...current,
+      [id]: {
+        ...customizing,
+        id,
+        addOns: extras,
+        quantity: (current[id]?.quantity ?? 0) + 1,
+      },
+    }));
+    setCustomizing(null);
+    setSelectedAddOns([]);
+    setCartOpen(true);
+  };
+
+  const change = (id: string, delta: number) => {
     setCart((current) => {
       const next = { ...current };
-      const item = next[name];
+      const item = next[id];
       if (!item) return current;
-      if (item.quantity + delta <= 0) delete next[name];
-      else next[name] = { ...item, quantity: item.quantity + delta };
+      if (item.quantity + delta <= 0) delete next[id];
+      else next[id] = { ...item, quantity: item.quantity + delta };
       return next;
     });
   };
 
   const sendOrder = () => {
-    const lines = Object.values(cart).map(
-      (item) => `• ${item.quantity}x ${item.name} — ${money(item.price * item.quantity)}`,
-    );
+    const lines = Object.values(cart).flatMap((item) => {
+      const unitTotal = item.price + item.addOns.reduce((sum, addOn) => sum + addOn.price, 0);
+      return [
+        `• ${item.quantity}x ${item.name} — ${money(unitTotal * item.quantity)}`,
+        ...item.addOns.map((addOn) => `   + ${addOn.name} — ${money(addOn.price)} por lanche`),
+      ];
+    });
     const message = [
       "Olá, Ponto Z! Quero fazer um pedido:",
       "",
@@ -250,7 +305,7 @@ export default function Home() {
               </div>
               <div className="product-footer">
                 <strong>{money(product.price)}</strong>
-                <button onClick={() => add(product)} aria-label={`Adicionar ${product.name} à sacola`}>+</button>
+                <button onClick={() => startAdd(product)} aria-label={`Adicionar ${product.name} à sacola`}>+</button>
               </div>
             </article>
           ))}
@@ -279,6 +334,51 @@ export default function Home() {
         </button>
       )}
 
+      {customizing && (
+        <div className="customizer-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setCustomizing(null)}>
+          <section className="customizer" role="dialog" aria-modal="true" aria-labelledby="customizer-title">
+            <div className="customizer-header">
+              <div>
+                <span className="eyebrow dark">Personalize seu lanche</span>
+                <h2 id="customizer-title">{customizing.name}</h2>
+                <p>Escolha os adicionais que deseja. Esta etapa é opcional.</p>
+              </div>
+              <button onClick={() => setCustomizing(null)} aria-label="Fechar adicionais">×</button>
+            </div>
+            <div className="addon-list">
+              {addOns.map((addOn) => {
+                const selected = selectedAddOns.includes(addOn.name);
+                return (
+                  <button
+                    className={selected ? "selected" : ""}
+                    key={addOn.name}
+                    onClick={() => toggleAddOn(addOn.name)}
+                    aria-pressed={selected}
+                  >
+                    <span className="addon-check">{selected ? "✓" : "+"}</span>
+                    <span><b>{addOn.name}</b><small>{money(addOn.price)}</small></span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="customizer-total">
+              <span>Total deste lanche</span>
+              <b>
+                {money(
+                  customizing.price +
+                    addOns
+                      .filter((addOn) => selectedAddOns.includes(addOn.name))
+                      .reduce((sum, addOn) => sum + addOn.price, 0),
+                )}
+              </b>
+            </div>
+            <button className="confirm-customization" onClick={confirmCustomizedProduct}>
+              {selectedAddOns.length ? "Adicionar lanche com adicionais" : "Adicionar sem adicionais"}
+            </button>
+          </section>
+        </div>
+      )}
+
       {cartOpen && (
         <div className="drawer-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setCartOpen(false)}>
           <aside className="cart-drawer" aria-label="Sua sacola">
@@ -290,12 +390,22 @@ export default function Home() {
               {quantity === 0 ? (
                 <div className="empty-cart"><span>PZ</span><h3>Sua sacola está vazia</h3><p>Adicione seus favoritos para começar.</p></div>
               ) : Object.values(cart).map((item) => (
-                <div className="cart-item" key={item.name}>
-                  <div><b>{item.name}</b><span>{money(item.price)}</span></div>
+                <div className="cart-item" key={item.id}>
+                  <div className="cart-item-info">
+                    <b>{item.name}</b>
+                    <span>{money(item.price)}</span>
+                    {item.addOns.length > 0 && (
+                      <ul className="cart-addons">
+                        {item.addOns.map((addOn) => (
+                          <li key={addOn.name}><span>+ {addOn.name}</span><span>{money(addOn.price)}</span></li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                   <div className="stepper">
-                    <button onClick={() => change(item.name, -1)}>−</button>
+                    <button onClick={() => change(item.id, -1)}>−</button>
                     <span>{item.quantity}</span>
-                    <button onClick={() => change(item.name, 1)}>+</button>
+                    <button onClick={() => change(item.id, 1)}>+</button>
                   </div>
                 </div>
               ))}
@@ -314,7 +424,7 @@ export default function Home() {
                           <b>{drink.name}</b>
                           <span>{money(drink.price)}</span>
                         </div>
-                        <button onClick={() => add(drink)} aria-label={`Adicionar ${drink.name}`}>
+                        <button onClick={() => addDirect(drink)} aria-label={`Adicionar ${drink.name}`}>
                           {cart[drink.name] ? `+1 (${cart[drink.name].quantity})` : "Adicionar"}
                         </button>
                       </div>

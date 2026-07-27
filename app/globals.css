@@ -107,8 +107,11 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 .drawer-header > button { border: 1px solid var(--line); background: var(--surface); width: 40px; height: 40px; border-radius: 50%; font-size: 25px; cursor: pointer; }
 .cart-list { overflow: visible; flex: 0 0 auto; }
 .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--line); }
-.cart-item > div:first-child { display: flex; flex-direction: column; gap: 6px; }
+.cart-item-info { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 6px; padding-right: 12px; }
 .cart-item span { color: #756b61; font-size: 13px; }
+.cart-addons { list-style: none; margin: 5px 0 0; padding: 8px 0 0; border-top: 1px dashed var(--line); display: grid; gap: 5px; }
+.cart-addons li { display: flex; justify-content: space-between; gap: 12px; }
+.cart-addons li span:first-child { color: var(--orange-dark); font-weight: 700; }
 .stepper { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 100px; overflow: hidden; background: var(--surface); }
 .stepper button { width: 34px; height: 34px; border: 0; background: var(--surface); color: var(--orange-dark); cursor: pointer; font-size: 19px; }
 .stepper span { min-width: 23px; text-align: center; color: var(--ink); font-weight: 800; }
@@ -152,6 +155,21 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 .order-mode button.selected { border-color: var(--orange); background: #fff4ed; box-shadow: inset 0 0 0 1px var(--orange); }
 .form-hint { color: #936143; font-size: 11px; line-height: 1.4; text-align: center; margin: 9px 0 0; }
 
+.customizer-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(20, 16, 12, .7); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 18px; }
+.customizer { width: min(620px, 100%); max-height: min(760px, calc(100vh - 36px)); overflow-y: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 28px; box-shadow: 0 24px 80px rgba(0,0,0,.3); }
+.customizer-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.customizer-header h2 { margin: 6px 0 7px; font-size: 30px; letter-spacing: -.04em; }
+.customizer-header p { margin: 0; color: #756b61; font-size: 13px; }
+.customizer-header > button { flex: 0 0 auto; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); font-size: 24px; cursor: pointer; }
+.addon-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 20px 0; }
+.addon-list > button { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px; text-align: left; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--ink); padding: 12px; cursor: pointer; }
+.addon-list > button.selected { border-color: var(--orange); background: #fff1e9; box-shadow: inset 0 0 0 1px var(--orange); }
+.addon-check { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 50%; color: var(--orange-dark); font-weight: 900; background: var(--paper); }
+.addon-list > button > span:last-child { display: grid; gap: 3px; }
+.addon-list small { color: #756b61; font-size: 11px; }
+.customizer-total { display: flex; justify-content: space-between; align-items: center; padding: 17px 0; border-top: 1px solid var(--line); font-size: 17px; }
+.confirm-customization { width: 100%; border: 0; border-radius: 12px; padding: 16px; background: var(--orange); color: white; font-weight: 900; cursor: pointer; }
+
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; background: linear-gradient(145deg, #1a1612 0 72%, #ef6b2e 72%); padding-bottom: 40px; }
   .hero-art { min-height: 300px; }
@@ -187,6 +205,8 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
   .footer-brand { grid-column: auto; }
   .floating-cart { display: flex; }
   .cart-drawer { padding: 24px 18px; }
+  .customizer { padding: 22px 16px; }
+  .addon-list { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
