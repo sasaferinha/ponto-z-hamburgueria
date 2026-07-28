@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Item = { name: string; quantity: number; price: number; addOns: { name: string; price: number }[] };
 type Order = {
@@ -20,19 +20,37 @@ export default function AdminPage() {
   const [filter, setFilter] = useState("ativos");
   const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos" });
   const [savingSettings, setSavingSettings] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const loadingOrders = useRef(false);
 
   const loadOrders = useCallback(async () => {
-    const response = await fetch("/api/orders", { cache: "no-store" });
-    if (!response.ok) { setError("Não foi possível carregar os pedidos."); setLoading(false); return; }
-    const data = await response.json() as { orders: Order[] };
-    setOrders(data.orders); setLoading(false); setError("");
+    if (loadingOrders.current) return;
+    loadingOrders.current = true;
+    try {
+      const response = await fetch("/api/orders", { cache: "no-store" });
+      if (!response.ok) throw new Error("Falha ao carregar pedidos");
+      const data = await response.json() as { orders: Order[] };
+      setOrders(data.orders); setLastUpdated(new Date()); setError("");
+    } catch {
+      setError("A conexão oscilou. O painel tentará novamente automaticamente.");
+    } finally {
+      setLoading(false); loadingOrders.current = false;
+    }
   }, []);
 
   useEffect(() => {
     void loadOrders();
     fetch("/api/settings", { cache: "no-store" }).then((response) => response.json()).then((data) => data?.settings && setStoreSettings(data.settings)).catch(() => undefined);
-    const timer = window.setInterval(() => void loadOrders(), 15000);
-    return () => window.clearInterval(timer);
+    const refreshNow = () => void loadOrders();
+    const refreshVisible = () => { if (document.visibilityState === "visible") refreshNow(); };
+    const timer = window.setInterval(refreshNow, 3000);
+    window.addEventListener("focus", refreshNow);
+    document.addEventListener("visibilitychange", refreshVisible);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refreshNow);
+      document.removeEventListener("visibilitychange", refreshVisible);
+    };
   }, [loadOrders]);
 
   const saveSettings = async () => {
@@ -44,8 +62,16 @@ export default function AdminPage() {
   };
 
   const updateStatus = async (id: number, status: string) => {
-    const response = await fetch(`/api/orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
-    if (response.ok) setOrders((current) => current.map((order) => order.id === id ? { ...order, status } : order));
+    const previous = orders.find((order) => order.id === id)?.status;
+    setOrders((current) => current.map((order) => order.id === id ? { ...order, status } : order));
+    try {
+      const response = await fetch(`/api/orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+      if (!response.ok) throw new Error("Falha ao atualizar");
+      setError("");
+    } catch {
+      if (previous) setOrders((current) => current.map((order) => order.id === id ? { ...order, status: previous } : order));
+      setError("Não foi possível alterar a situação. Tente novamente.");
+    }
   };
 
   const printOrder = (order: Order) => {
@@ -63,7 +89,7 @@ export default function AdminPage() {
   const activeCount = orders.filter((order) => !["finalizado", "cancelado"].includes(order.status)).length;
   return (
     <main className="admin-shell">
-      <header className="admin-header"><div><p className="eyebrow">Central de pedidos</p><h1>Ponto Z</h1><span>{activeCount} {activeCount === 1 ? "pedido ativo" : "pedidos ativos"}</span></div><div><button onClick={() => void loadOrders()}>Atualizar</button><a href="/">Ver cardápio</a></div></header>
+      <header className="admin-header"><div><p className="eyebrow">Central de pedidos</p><h1>Ponto Z</h1><span>{activeCount} {activeCount === 1 ? "pedido ativo" : "pedidos ativos"}{lastUpdated ? ` · atualizado às ${lastUpdated.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : ""}</span></div><div><button onClick={() => void loadOrders()}>Atualizar agora</button><a href="/">Ver cardápio</a></div></header>
       <section className="store-controls" aria-labelledby="store-controls-title">
         <div><p className="eyebrow dark">Funcionamento</p><h2 id="store-controls-title">Status e entrega</h2><span>As mudanças aparecem automaticamente no cardápio.</span></div>
         <div className="open-control" role="group" aria-label="Status da hamburgueria">
