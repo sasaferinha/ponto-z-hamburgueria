@@ -15,17 +15,15 @@ const money = (cents: number) => new Intl.NumberFormat("pt-BR", { style: "curren
 
 export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [password, setPassword] = useState("");
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("ativos");
 
   const loadOrders = useCallback(async () => {
     const response = await fetch("/api/orders", { cache: "no-store" });
-    if (response.status === 401) { setAuthenticated(false); return; }
-    if (!response.ok) { setError("Não foi possível carregar os pedidos."); return; }
+    if (!response.ok) { setError("Não foi possível carregar os pedidos."); setLoading(false); return; }
     const data = await response.json() as { orders: Order[] };
-    setOrders(data.orders); setAuthenticated(true); setError("");
+    setOrders(data.orders); setLoading(false); setError("");
   }, []);
 
   useEffect(() => {
@@ -33,13 +31,6 @@ export default function AdminPage() {
     const timer = window.setInterval(() => void loadOrders(), 15000);
     return () => window.clearInterval(timer);
   }, [loadOrders]);
-
-  const login = async (event: React.FormEvent) => {
-    event.preventDefault(); setError("");
-    const response = await fetch("/api/admin/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) });
-    if (!response.ok) { setError("Senha incorreta."); return; }
-    setPassword(""); await loadOrders();
-  };
 
   const updateStatus = async (id: number, status: string) => {
     const response = await fetch(`/api/orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
@@ -55,18 +46,7 @@ export default function AdminPage() {
     popup.document.close();
   };
 
-  if (authenticated === null) return <main className="admin-loading">Carregando painel...</main>;
-  if (!authenticated) return (
-    <main className="admin-login">
-      <form onSubmit={login}>
-        <span className="admin-mark">PZ</span><p className="eyebrow dark">Área restrita</p>
-        <h1>Painel da Ponto Z</h1><p>Entre com a senha administrativa para acompanhar os pedidos.</p>
-        <label><span>Senha</span><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoFocus /></label>
-        {error && <p className="admin-error">{error}</p>}<button type="submit">Entrar no painel</button>
-        <a href="/">Voltar ao cardápio</a>
-      </form>
-    </main>
-  );
+  if (loading) return <main className="admin-loading">Carregando painel...</main>;
 
   const visible = orders.filter((order) => filter === "todos" || (filter === "ativos" ? !["finalizado", "cancelado"].includes(order.status) : order.status === filter));
   const activeCount = orders.filter((order) => !["finalizado", "cancelado"].includes(order.status)).length;

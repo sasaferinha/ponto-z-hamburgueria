@@ -1,12 +1,10 @@
 import { eq, sql } from "drizzle-orm";
 import { getDb } from "../../../../db";
 import { orders } from "../../../../db/schema";
-import { isAdmin } from "../../admin-auth";
 
 const statuses = new Set(["novo", "preparo", "pronto", "finalizado", "cancelado"]);
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  if (!isAdmin(request)) return Response.json({ error: "Não autorizado" }, { status: 401 });
   const { id } = await context.params;
   const { status } = (await request.json()) as { status?: string };
   if (!statuses.has(status ?? "")) return Response.json({ error: "Status inválido" }, { status: 400 });

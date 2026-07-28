@@ -1,7 +1,6 @@
 import { desc } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { orders } from "../../../db/schema";
-import { isAdmin } from "../admin-auth";
 
 type OrderItem = { name: string; quantity: number; price: number; addOns: { name: string; price: number }[] };
 
@@ -30,8 +29,7 @@ export async function POST(request: Request) {
   return Response.json({ order }, { status: 201 });
 }
 
-export async function GET(request: Request) {
-  if (!isAdmin(request)) return Response.json({ error: "Não autorizado" }, { status: 401 });
+export async function GET() {
   const rows = await getDb().select().from(orders).orderBy(desc(orders.createdAt), desc(orders.id)).limit(200);
   return Response.json({ orders: rows });
 }
