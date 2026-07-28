@@ -54,7 +54,7 @@ export default function AdminPage() {
     <main className="admin-shell">
       <header className="admin-header"><div><p className="eyebrow">Central de pedidos</p><h1>Ponto Z</h1><span>{activeCount} {activeCount === 1 ? "pedido ativo" : "pedidos ativos"}</span></div><div><button onClick={() => void loadOrders()}>Atualizar</button><a href="/">Ver cardápio</a></div></header>
       <nav className="admin-filters" aria-label="Filtrar pedidos">
-        {[['ativos','Ativos'],['novo','Novos'],['preparo','Em preparo'],['pronto','Prontos'],['finalizado','Finalizados'],['todos','Todos']].map(([value,label]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}</button>)}
+        {[['ativos','Ativos'],['novo','Novos'],['todos','Todos']].map(([value,label]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}</button>)}
       </nav>
       {error && <p className="admin-error">{error}</p>}
       <section className="order-board">
