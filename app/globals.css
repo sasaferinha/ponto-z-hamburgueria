@@ -13,10 +13,10 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Segoe UI", Arial, Helvetica, sans-serif; }
-button, input { font: inherit; }
-button, a { -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Segoe UI", Arial, Helvetica, sans-serif; overflow-x: hidden; }
+button, input, select, textarea { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 a { color: inherit; text-decoration: none; }
 
 .topbar {
@@ -100,7 +100,7 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 .floating-cart span { font-size: 12px; }
 .floating-cart b { font-size: 14px; }
 .drawer-backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(20, 16, 12, .62); backdrop-filter: blur(3px); display: flex; justify-content: flex-end; }
-.cart-drawer { width: min(480px, 100%); height: 100%; background: var(--paper); padding: 32px; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; box-shadow: -20px 0 60px rgba(0,0,0,.2); animation: slide .25s ease-out; }
+.cart-drawer { width: min(480px, 100%); height: 100dvh; background: var(--paper); padding: 32px; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; box-shadow: -20px 0 60px rgba(0,0,0,.2); animation: slide .25s ease-out; }
 @keyframes slide { from { transform: translateX(100%); } }
 .drawer-header { display: flex; align-items: start; justify-content: space-between; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
 .drawer-header h2 { margin: 5px 0 0; font-size: 34px; letter-spacing: -.05em; }
@@ -140,11 +140,11 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 .checkout-title h3 { margin: 4px 0 0; font-size: 20px; letter-spacing: -.03em; }
 .checkout-details label { display: grid; gap: 7px; margin-top: 13px; }
 .checkout-details label > span { color: #5f564e; font-weight: 800; font-size: 12px; }
-.checkout-details input, .checkout-details textarea {
+.checkout-details input, .checkout-details select, .checkout-details textarea {
   width: 100%; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--ink);
-  padding: 12px 13px; outline: 0; resize: none; font-size: 14px;
+  padding: 12px 13px; outline: 0; resize: none; font-size: 16px;
 }
-.checkout-details input:focus, .checkout-details textarea:focus { border-color: var(--orange); box-shadow: 0 0 0 3px #fff0e8; }
+.checkout-details input:focus, .checkout-details select:focus, .checkout-details textarea:focus { border-color: var(--orange); box-shadow: 0 0 0 3px #fff0e8; }
 .address-fields { display: grid; gap: 0; }
 .delivery-notice { margin: 13px 0 0; padding: 11px 12px; border-radius: 10px; background: #f7e4d8; color: #8b3a16; font-size: 11px; font-weight: 800; line-height: 1.4; }
 .order-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 13px; }
@@ -204,9 +204,15 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
   footer { grid-template-columns: 1fr; padding-bottom: 105px; }
   .footer-brand { grid-column: auto; }
   .floating-cart { display: flex; }
-  .cart-drawer { padding: 24px 18px; }
-  .customizer { padding: 22px 16px; }
+  .drawer-backdrop { align-items: stretch; }
+  .cart-drawer { width: 100vw; max-width: none; height: 100dvh; padding: 20px 16px calc(26px + env(safe-area-inset-bottom)); }
+  .drawer-header { position: sticky; top: -20px; z-index: 2; background: var(--paper); padding-top: 20px; }
+  .customizer-backdrop { padding: 0; place-items: stretch; }
+  .customizer { width: 100vw; max-width: none; height: 100dvh; max-height: 100dvh; border: 0; border-radius: 0; padding: 22px 16px calc(24px + env(safe-area-inset-bottom)); }
   .addon-list { grid-template-columns: 1fr; }
+  .checkout-details input, .checkout-details select, .checkout-details textarea, .search input { font-size: 16px; }
+  .order-mode { grid-template-columns: 1fr; }
+  .drawer-footer > div { gap: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

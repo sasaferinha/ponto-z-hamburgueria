@@ -23,6 +23,45 @@ const categories = [
   { id: "bebidas", label: "Bebidas" },
 ];
 
+const lavrasNeighborhoods = [
+  "Aeroporto", "Alta Villa Bom Jesus", "Alta Villa Lavras", "Alta Vista", "Alto do Cruzeiro", "Alvorada",
+  "Amadeu Pinheiro", "Anísio Alves de Abreu", "Aquenta Sol", "Área Rural de Lavras", "Artur Bernardes", "Baunilha",
+  "Belizanda", "Belo Horizonte", "Belo Monte", "Bicame", "Boa Vista", "Brisas da Serra", "Caminhos da Serra",
+  "Cascalho", "Cecília Azevedo", "Centenário", "Centro", "Centro Empresarial de Lavras", "Chácara São Geraldo",
+  "Chácara Serra Bella", "Chácaras da Serra", "Charquinho", "Cidade da Serra", "Colinas da Serra",
+  "Colinas da Serra III", "Colinas da Serra IV", "Comunidade do Funil", "Condomínio Aldeia de Sagres",
+  "Condomínio das Goiabeiras", "Condomínio Dharma Ville", "Condomínio Flamboyants", "Condomínio Jardim das Palmeiras",
+  "Condomínio Lagoa dos Ipês", "Condomínio Montserrat", "Condomínio Reserva do Funil",
+  "Condomínio Residencial Lavras Parque I", "Condomínio Stone Village", "Conjunto Habitacional Água Limpa",
+  "Conjunto Habitacional Alto dos Ipês", "Conjunto Habitacional Cidade Nova", "Conjunto Habitacional João da Cruz Botrel",
+  "Conjunto Habitacional Júlio Sidney Pinto", "Conjunto Habitacional Residencial Caminho das Águas",
+  "Conjunto Habitacional Residencial Caminho das Águas II", "Costa Pinto", "Cruzeiro do Sul",
+  "Distrito Industrial Deputado Sylvio Menicucci", "Distrito Industrial II", "Distrito Industrial III", "Dona Flor",
+  "Dona Irene", "Dona Julieta", "Dona Odete", "Dos Ipês", "Doutor João Ribeiro", "Doutor Paulo Menicucci",
+  "Esplanada", "Fátima", "Gato Preto", "Ignácio Valentini", "Jardim América", "Jardim Bela Vista",
+  "Jardim Campestre", "Jardim Campestre II", "Jardim Campestre III", "Jardim das Acácias", "Jardim das Alterosas",
+  "Jardim das Magnólias", "Jardim das Magnólias II", "Jardim Dona Wanda", "Jardim Eldorado", "Jardim Europa",
+  "Jardim Fabiana", "Jardim Floresta", "Jardim Glória", "Jardim Itália", "Jardim Klintiana", "Jardim Rio Bonito",
+  "Jardim Samauma", "Jardim São Carlos", "Jardim São Paulo", "Jardim Vila Rica", "Lavras Shopping", "Lavrinhas",
+  "Manoel Alves", "Martins", "Monte Líbano", "Monte Líbano II", "Monte Líbano III", "Morada do Sol",
+  "Morada do Sol II", "Morada do Sol III", "Niterói", "Nossa Senhora Aparecida", "Nossa Senhora de Lourdes",
+  "Nossa Senhora de Lourdes II", "Nossa Senhora do Líbano", "Nova Lavras", "Novo Água Limpa", "Novo Água Limpa II",
+  "Olaria", "Ouro Branco", "Ouro Preto", "Ouro Verde", "Padre Dehon", "Parque Belvedere", "Parque Bocaina",
+  "Parque Bocaina II", "Parque das Pedras Preciosas", "Parque dos Ipês", "Parque Imperial", "Pedro Silvestre",
+  "Planalto", "Portal da Mata", "Portal da Serra", "Presidente Kennedy", "Província de Lucca", "Reserva Real",
+  "Residencial Agyo", "Residencial Alphaville", "Residencial Antônio Cherem", "Residencial a Vencedora",
+  "Residencial Bela Vista", "Residencial Bouganville", "Residencial Fonte Verde", "Residencial Jardins",
+  "Residencial Judith Cândido Andrade", "Residencial Londres", "Residencial Mundo Novo", "Residencial Nova Era",
+  "Residencial Nova Era II", "Residencial Nova Era III", "Residencial Parque Leste", "Residencial Sant'ana I",
+  "Residencial Tipuana", "Residencial Tipuana II", "Residencial Vista do Lago", "Retiro", "Santa Cruz",
+  "Santa Efigênia", "Santa Filomena", "São Vicente", "Serra Azul", "Serra Verde", "Sub-Estação",
+  "Universidade Federal de Lavras", "Vale do Sol", "Vila Alzira", "Vila Bandeirantes", "Vila Brasília", "Vila Ester",
+  "Vila Glória", "Vila Joaquim Sales", "Vila José Vilela", "Vila Mariana", "Vila Menicucci", "Vila Murad",
+  "Vila Nílton Teixeira", "Vila Paraíso", "Vila Pitangui", "Vila Rosalina", "Vila Santa Terezinha",
+  "Vila São Camilo", "Vila São Francisco", "Vila São Sebastião", "Vila Vera Cruz", "Villa da Serra",
+  "Villa da Serra - 1ª Ampliação", "Vista Alegre", "Vista do Funil", "Outro / não encontrei",
+];
+
 const base = "Molho da casa, batata palha";
 const products: Product[] = [
   { category: "padrao", name: "X-Burguer", price: 16, description: `${base}, muçarela e hambúrguer 120g`, badge: "Clássico" },
@@ -474,12 +513,16 @@ export default function Home() {
                     <div className="address-fields">
                       <label>
                         <span>Seu bairro</span>
-                        <input
+                        <select
                           value={neighborhood}
                           onChange={(event) => setNeighborhood(event.target.value)}
-                          placeholder="Digite o bairro"
                           autoComplete="address-level3"
-                        />
+                        >
+                          <option value="" disabled>Selecione seu bairro</option>
+                          {lavrasNeighborhoods.map((item) => (
+                            <option value={item} key={item}>{item}</option>
+                          ))}
+                        </select>
                       </label>
                       <label>
                         <span>Sua rua</span>
