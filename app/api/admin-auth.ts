@@ -1,5 +1,5 @@
 // A senha original não fica salva no projeto, apenas sua impressão digital.
-const PASSWORD_HASH = "c933e171d9ec477081ef9f5906c7c45788d59df9c62ce3aac7b92500ea17c164";
+const PASSWORD_HASH = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3";
 const SESSION_TOKEN = "ponto-z-admin-2026-6e932a1c53b94293";
 const COOKIE_NAME = "ponto_z_admin";
 
