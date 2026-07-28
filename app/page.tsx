@@ -152,6 +152,8 @@ export default function Home() {
   const [neighborhood, setNeighborhood] = useState("");
   const [street, setStreet] = useState("");
   const [addressDetails, setAddressDetails] = useState("");
+  const [sendingOrder, setSendingOrder] = useState(false);
+  const [orderError, setOrderError] = useState("");
 
   const visible = useMemo(() => {
     const term = search.trim().toLocaleLowerCase("pt-BR");
@@ -225,7 +227,9 @@ export default function Home() {
     });
   };
 
-  const sendOrder = () => {
+  const sendOrder = async () => {
+    setSendingOrder(true);
+    setOrderError("");
     const lines = Object.values(cart).flatMap((item) => {
       const unitTotal = item.price + item.addOns.reduce((sum, addOn) => sum + addOn.price, 0);
       return [
@@ -246,7 +250,26 @@ export default function Home() {
         : "Forma de recebimento: Retirada no balcão",
       "Forma de pagamento:",
     ].join("\n");
-    window.open(`https://wa.me/5535997240245?text=${encodeURIComponent(message)}`, "_blank");
+    const whatsappWindow = window.open("about:blank", "_blank");
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName, orderMode, neighborhood, street, addressDetails, total,
+          items: Object.values(cart).map(({ name, quantity, price, addOns }) => ({ name, quantity, price, addOns })),
+        }),
+      });
+      if (!response.ok) throw new Error("Não foi possível registrar o pedido");
+      const destination = `https://wa.me/5535997240245?text=${encodeURIComponent(message)}`;
+      if (whatsappWindow) whatsappWindow.location.href = destination;
+      else window.location.href = destination;
+    } catch {
+      whatsappWindow?.close();
+      setOrderError("Não foi possível registrar o pedido. Tente novamente em alguns instantes.");
+    } finally {
+      setSendingOrder(false);
+    }
   };
 
   const keepShopping = () => {
@@ -556,12 +579,14 @@ export default function Home() {
                   className="whatsapp-order"
                   onClick={sendOrder}
                   disabled={
+                    sendingOrder ||
                     !customerName.trim() ||
                     (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))
                   }
                 >
-                  Enviar pedido no WhatsApp <span>↗</span>
+                  {sendingOrder ? "Registrando pedido..." : "Enviar pedido no WhatsApp"} <span>↗</span>
                 </button>
+                {orderError && <p className="form-error" role="alert">{orderError}</p>}
                 {(!customerName.trim() ||
                   (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))) && (
                   <p className="form-hint">
