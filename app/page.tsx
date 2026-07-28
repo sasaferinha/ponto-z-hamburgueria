@@ -19,6 +19,7 @@ const categories = [
   { id: "artesanal", label: "Artesanais" },
   { id: "lombo", label: "Lombo" },
   { id: "especiais", label: "Especiais" },
+  { id: "batatas", label: "Batata frita" },
   { id: "adicionais", label: "Adicionais" },
   { id: "bebidas", label: "Bebidas" },
 ];
@@ -112,6 +113,11 @@ const products: Product[] = [
   { category: "especiais", name: "Frango Desfiado Top", price: 30, description: "Pão, tomate, maionese, batata palha, frango desfiado com azeitona, 2 fatias de muçarela e cream cheese Philadelphia", badge: "Especial" },
   { category: "especiais", name: "Omelete", price: 28, description: "3 ovos, presunto, queijo, alface, tomate, milho, batata palha e uma carne: calabresa, bacon ou frango" },
 
+  { category: "batatas", name: "Batata frita pequena", price: 10, description: "Porção de 150g acompanhada de dois molhos da casa", badge: "150g" },
+  { category: "batatas", name: "Batata frita média", price: 15, description: "Porção de 250g acompanhada de dois molhos da casa", badge: "250g" },
+  { category: "batatas", name: "Batata frita grande", price: 25, description: "Porção de 500g acompanhada de dois molhos da casa", badge: "500g" },
+  { category: "batatas", name: "Batata com cheddar e bacon", price: 35, description: "Porção de 500g com cheddar e bacon, acompanhada de dois molhos da casa", badge: "Especial" },
+
   ...[
     ["Bacon", 10], ["Calabresa", 8], ["Catupiry", 6], ["Cebola", 2], ["Cheddar", 7],
     ["Frango", 10], ["Hambúrguer", 8], ["Hambúrguer Artesanal", 12], ["Lombo", 8],
@@ -132,7 +138,14 @@ const addOns: AddOn[] = products
   .filter((product) => product.category === "adicionais")
   .map(({ name, price }) => ({ name, price }));
 
-const customizableCategories = new Set(["padrao", "frango", "artesanal", "lombo", "especiais"]);
+const friesAddOns: AddOn[] = [
+  { name: "Cheddar", price: 6 },
+  { name: "Catupiry", price: 6 },
+  { name: "Bacon", price: 8 },
+  { name: "Queijo", price: 6 },
+];
+
+const customizableCategories = new Set(["padrao", "frango", "artesanal", "lombo", "especiais", "batatas"]);
 
 const drinkRecommendations = products.filter(
   (product) =>
@@ -177,6 +190,7 @@ export default function Home() {
     (sum, item) => sum + (item.price + item.addOns.reduce((extras, addOn) => extras + addOn.price, 0)) * item.quantity,
     0,
   );
+  const currentAddOns = customizing?.category === "batatas" ? friesAddOns : addOns;
 
   const addDirect = (product: Product) => {
     setCart((current) => ({
@@ -207,7 +221,7 @@ export default function Home() {
 
   const confirmCustomizedProduct = () => {
     if (!customizing) return;
-    const extras = addOns.filter((addOn) => selectedAddOns.includes(addOn.name));
+    const extras = currentAddOns.filter((addOn) => selectedAddOns.includes(addOn.name));
     const signature = extras.map((addOn) => addOn.name).sort().join("+") || "sem-adicional";
     const id = `${customizing.name}::${signature}`;
     setCart((current) => ({
@@ -409,14 +423,14 @@ export default function Home() {
           <section className="customizer" role="dialog" aria-modal="true" aria-labelledby="customizer-title">
             <div className="customizer-header">
               <div>
-                <span className="eyebrow dark">Personalize seu lanche</span>
+                <span className="eyebrow dark">{customizing.category === "batatas" ? "Personalize sua batata" : "Personalize seu lanche"}</span>
                 <h2 id="customizer-title">{customizing.name}</h2>
                 <p>Escolha os adicionais que deseja. Esta etapa é opcional.</p>
               </div>
               <button onClick={() => setCustomizing(null)} aria-label="Fechar adicionais">×</button>
             </div>
             <div className="addon-list">
-              {addOns.map((addOn) => {
+              {currentAddOns.map((addOn) => {
                 const selected = selectedAddOns.includes(addOn.name);
                 return (
                   <button
@@ -436,14 +450,14 @@ export default function Home() {
               <b>
                 {money(
                   customizing.price +
-                    addOns
+                    currentAddOns
                       .filter((addOn) => selectedAddOns.includes(addOn.name))
                       .reduce((sum, addOn) => sum + addOn.price, 0),
                 )}
               </b>
             </div>
             <button className="confirm-customization" onClick={confirmCustomizedProduct}>
-              {selectedAddOns.length ? "Adicionar lanche com adicionais" : "Adicionar sem adicionais"}
+              {selectedAddOns.length ? "Adicionar com adicionais" : "Adicionar sem adicionais"}
             </button>
           </section>
         </div>
