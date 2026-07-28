@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Product = {
   name: string;
@@ -154,6 +154,14 @@ export default function Home() {
   const [addressDetails, setAddressDetails] = useState("");
   const [sendingOrder, setSendingOrder] = useState(false);
   const [orderError, setOrderError] = useState("");
+  const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos" });
+
+  useEffect(() => {
+    fetch("/api/settings", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => data?.settings && setStoreSettings(data.settings))
+      .catch(() => undefined);
+  }, []);
 
   const visible = useMemo(() => {
     const term = search.trim().toLocaleLowerCase("pt-BR");
@@ -319,8 +327,8 @@ export default function Home() {
       </section>
 
       <section className="store-strip">
-        <div><span className="status-dot" /><b>Horário de funcionamento</b><small>18h às 00h · Pedidos pelo WhatsApp</small></div>
-        <div><b>Delivery e retirada</b><small>Confirme prazo e taxa no pedido</small></div>
+        <div className={storeSettings.isOpen ? "store-open" : "store-closed"}><span className="status-dot" /><b>{storeSettings.isOpen ? "Aberto agora" : "Fechado no momento"}</b><small>Funcionamento: 18h às 00h</small></div>
+        <div><b>Delivery e retirada</b><small>{storeSettings.isOpen ? `Entrega estimada: ${storeSettings.deliveryTime}` : "Novos pedidos temporariamente pausados"}</small></div>
         <div><b>Rua Evaristo Gomes Guerra, 509</b><small>Jardim Glória · Lavras/MG</small></div>
       </section>
 
@@ -580,11 +588,12 @@ export default function Home() {
                   onClick={sendOrder}
                   disabled={
                     sendingOrder ||
+                    !storeSettings.isOpen ||
                     !customerName.trim() ||
                     (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))
                   }
                 >
-                  {sendingOrder ? "Registrando pedido..." : "Enviar pedido no WhatsApp"} <span>↗</span>
+                  {!storeSettings.isOpen ? "Hamburgueria fechada" : sendingOrder ? "Registrando pedido..." : "Enviar pedido no WhatsApp"} <span>↗</span>
                 </button>
                 {orderError && <p className="form-error" role="alert">{orderError}</p>}
                 {(!customerName.trim() ||

@@ -8,6 +8,13 @@
       "when": 1785247876053,
       "tag": "0000_windy_liz_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1785249025898,
+      "tag": "0001_daily_elektra",
+      "breakpoints": true
     }
   ]
 }

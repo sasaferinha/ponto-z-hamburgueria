@@ -18,6 +18,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("ativos");
+  const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos" });
+  const [savingSettings, setSavingSettings] = useState(false);
 
   const loadOrders = useCallback(async () => {
     const response = await fetch("/api/orders", { cache: "no-store" });
@@ -28,9 +30,18 @@ export default function AdminPage() {
 
   useEffect(() => {
     void loadOrders();
+    fetch("/api/settings", { cache: "no-store" }).then((response) => response.json()).then((data) => data?.settings && setStoreSettings(data.settings)).catch(() => undefined);
     const timer = window.setInterval(() => void loadOrders(), 15000);
     return () => window.clearInterval(timer);
   }, [loadOrders]);
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    const response = await fetch("/api/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(storeSettings) });
+    if (!response.ok) setError("Não foi possível salvar o funcionamento.");
+    else setError("");
+    setSavingSettings(false);
+  };
 
   const updateStatus = async (id: number, status: string) => {
     const response = await fetch(`/api/orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
@@ -53,6 +64,15 @@ export default function AdminPage() {
   return (
     <main className="admin-shell">
       <header className="admin-header"><div><p className="eyebrow">Central de pedidos</p><h1>Ponto Z</h1><span>{activeCount} {activeCount === 1 ? "pedido ativo" : "pedidos ativos"}</span></div><div><button onClick={() => void loadOrders()}>Atualizar</button><a href="/">Ver cardápio</a></div></header>
+      <section className="store-controls" aria-labelledby="store-controls-title">
+        <div><p className="eyebrow dark">Funcionamento</p><h2 id="store-controls-title">Status e entrega</h2><span>As mudanças aparecem automaticamente no cardápio.</span></div>
+        <div className="open-control" role="group" aria-label="Status da hamburgueria">
+          <button className={storeSettings.isOpen ? "selected open" : ""} onClick={() => setStoreSettings((current) => ({ ...current, isOpen: true }))}>Aberto</button>
+          <button className={!storeSettings.isOpen ? "selected closed" : ""} onClick={() => setStoreSettings((current) => ({ ...current, isOpen: false }))}>Fechado</button>
+        </div>
+        <label><span>Tempo estimado de entrega</span><input value={storeSettings.deliveryTime} onChange={(event) => setStoreSettings((current) => ({ ...current, deliveryTime: event.target.value }))} placeholder="Ex.: 40 a 60 minutos" maxLength={60} /></label>
+        <button className="save-store-settings" onClick={() => void saveSettings()} disabled={savingSettings || !storeSettings.deliveryTime.trim()}>{savingSettings ? "Salvando..." : "Salvar funcionamento"}</button>
+      </section>
       <nav className="admin-filters" aria-label="Filtrar pedidos">
         {[['ativos','Ativos'],['novo','Novos'],['todos','Todos']].map(([value,label]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}</button>)}
       </nav>

@@ -14,3 +14,10 @@ export const orders = sqliteTable("orders", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const storeSettings = sqliteTable("store_settings", {
+  id: integer("id").primaryKey().default(1),
+  isOpen: integer("is_open", { mode: "boolean" }).notNull().default(true),
+  deliveryTime: text("delivery_time").notNull().default("40 a 60 minutos"),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
