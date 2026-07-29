@@ -254,9 +254,8 @@ export default function Home() {
     setSendingOrder(true);
     setOrderError("");
     const lines = Object.values(cart).flatMap((item) => {
-      const unitTotal = item.price + item.addOns.reduce((sum, addOn) => sum + addOn.price, 0);
       return [
-        `• ${item.quantity}x ${item.name} — ${money(unitTotal * item.quantity)}`,
+        `• ${item.quantity}x ${item.name} — ${money(item.price * item.quantity)}`,
         ...item.addOns.map((addOn) => `   + ${addOn.name} — ${money(addOn.price)} por lanche`),
       ];
     });
