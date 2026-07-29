@@ -60,8 +60,72 @@ const lavrasNeighborhoods = [
   "Vila Glória", "Vila Joaquim Sales", "Vila José Vilela", "Vila Mariana", "Vila Menicucci", "Vila Murad",
   "Vila Nílton Teixeira", "Vila Paraíso", "Vila Pitangui", "Vila Rosalina", "Vila Santa Terezinha",
   "Vila São Camilo", "Vila São Francisco", "Vila São Sebastião", "Vila Vera Cruz", "Villa da Serra",
-  "Villa da Serra - 1ª Ampliação", "Vista Alegre", "Vista do Funil", "Outro / não encontrei",
+  "Villa da Serra - 1ª Ampliação", "Vista Alegre", "Vista do Funil", "Novo Horizonte", "Jardim Santana", "Cohab", "Outro / não encontrei",
 ];
+
+const deliveryFees: Record<string, number> = {
+  "Jardim Glória": 6,
+  "Vila São Francisco": 6,
+  "Residencial Nova Era": 8,
+  "Residencial Nova Era II": 8,
+  "Residencial Nova Era III": 8,
+  "Jardim das Acácias": 8,
+  "Jardim Campestre": 8,
+  "Jardim Campestre II": 8,
+  "Jardim Campestre III": 8,
+  "Morada do Sol": 8,
+  "Morada do Sol II": 8,
+  "Morada do Sol III": 8,
+  "Jardim Klintiana": 8,
+  "Belizanda": 8,
+  "Vila Joaquim Sales": 8,
+  "Serra Azul": 8,
+  "Dona Julieta": 8,
+  "Ouro Preto": 8,
+  "Ouro Branco": 8,
+  "Conjunto Habitacional Água Limpa": 10,
+  "Novo Água Limpa": 10,
+  "Novo Água Limpa II": 10,
+  "Novo Horizonte": 10,
+  "Residencial Fonte Verde": 15,
+  "Residencial Mundo Novo": 10,
+  "Vila Murad": 8,
+  "Jardim Floresta": 8,
+  "Centro": 8,
+  "Centenário": 8,
+  "Cruzeiro do Sul": 8,
+  "Jardim das Alterosas": 8,
+  "Vila Pitangui": 8,
+  "Vale do Sol": 10,
+  "Jardim Bela Vista": 10,
+  "Residencial Bela Vista": 10,
+  "Jardim das Magnólias": 10,
+  "Jardim das Magnólias II": 10,
+  "Serra Verde": 10,
+  "Parque Bocaina": 10,
+  "Parque Bocaina II": 10,
+  "Colinas da Serra": 10,
+  "Colinas da Serra III": 10,
+  "Colinas da Serra IV": 10,
+  "Portal da Serra": 10,
+  "Vista Alegre": 10,
+  "Aeroporto": 10,
+  "Santa Cruz": 10,
+  "Jardim Santana": 10,
+  "Olaria": 8,
+  "Universidade Federal de Lavras": 10,
+  "Aquenta Sol": 8,
+  "Lavrinhas": 8,
+  "Nossa Senhora de Lourdes": 8,
+  "Nossa Senhora de Lourdes II": 8,
+  "Cohab": 8,
+  "Conjunto Habitacional Cidade Nova": 10,
+  "Residencial Judith Cândido Andrade": 10,
+  "Residencial Vista do Lago": 10,
+  "Conjunto Habitacional Residencial Caminho das Águas": 10,
+  "Conjunto Habitacional Residencial Caminho das Águas II": 10,
+  "Portal da Mata": 15,
+};
 
 const base = "Molho da casa, batata palha";
 const products: Product[] = [
@@ -191,6 +255,8 @@ export default function Home() {
     (sum, item) => sum + (item.price + item.addOns.reduce((extras, addOn) => extras + addOn.price, 0)) * item.quantity,
     0,
   );
+  const deliveryFee = orderMode === "entrega" ? deliveryFees[neighborhood] : 0;
+  const orderTotal = total + (deliveryFee ?? 0);
   const currentAddOns = customizing?.category === "batatas" ? friesAddOns : addOns;
 
   const addDirect = (product: Product) => {
@@ -264,7 +330,11 @@ export default function Home() {
       "",
       ...lines,
       "",
-      `Total dos itens: ${money(total)}`,
+      `Subtotal dos itens: ${money(total)}`,
+      ...(orderMode === "entrega"
+        ? [deliveryFee !== undefined ? `Taxa de entrega: ${money(deliveryFee)}` : "Taxa de entrega: a confirmar"]
+        : []),
+      `Total do pedido: ${money(orderTotal)}`,
       "",
       `Nome: ${customerName.trim()}`,
       orderMode === "entrega"
@@ -278,8 +348,13 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerName, orderMode, neighborhood, street, addressDetails, paymentMethod, total,
-          items: Object.values(cart).map(({ name, quantity, price, addOns }) => ({ name, quantity, price, addOns })),
+          customerName, orderMode, neighborhood, street, addressDetails, paymentMethod, total: orderTotal,
+          items: [
+            ...Object.values(cart).map(({ name, quantity, price, addOns }) => ({ name, quantity, price, addOns })),
+            ...(orderMode === "entrega" && deliveryFee !== undefined
+              ? [{ name: "Taxa de entrega", quantity: 1, price: deliveryFee, addOns: [] }]
+              : []),
+          ],
         }),
       });
       if (!response.ok) throw new Error("Não foi possível registrar o pedido");
@@ -565,7 +640,9 @@ export default function Home() {
                         >
                           <option value="" disabled>Selecione seu bairro</option>
                           {lavrasNeighborhoods.map((item) => (
-                            <option value={item} key={item}>{item}</option>
+                            <option value={item} key={item}>
+                              {item}{deliveryFees[item] !== undefined ? ` — ${money(deliveryFees[item])}` : ""}
+                            </option>
                           ))}
                         </select>
                       </label>
@@ -587,7 +664,11 @@ export default function Home() {
                           autoComplete="address-line2"
                         />
                       </label>
-                      <p className="delivery-notice">O valor da entrega será informado no WhatsApp.</p>
+                      <p className="delivery-notice">
+                        {neighborhood && deliveryFee !== undefined
+                          ? `Taxa de entrega para ${neighborhood}: ${money(deliveryFee)}`
+                          : "Selecione um bairro cadastrado para consultar a taxa. Outros locais serão confirmados pelo WhatsApp."}
+                      </p>
                     </div>
                   )}
                   <fieldset className="payment-fieldset">
@@ -609,10 +690,16 @@ export default function Home() {
                     </div>
                   </fieldset>
                 </section>
-                <div><span>Total dos itens</span><b>{money(total)}</b></div>
+                <div className="order-summary">
+                  <div><span>Subtotal dos itens</span><b>{money(total)}</b></div>
+                  {orderMode === "entrega" && (
+                    <div><span>Taxa de entrega</span><b>{deliveryFee !== undefined ? money(deliveryFee) : "A confirmar"}</b></div>
+                  )}
+                  <div className="order-grand-total"><span>Total do pedido</span><b>{money(orderTotal)}</b></div>
+                </div>
                 <small>
                   {orderMode === "entrega"
-                    ? "O valor da entrega e o prazo serão informados no WhatsApp."
+                    ? deliveryFee !== undefined ? "A taxa de entrega já está incluída no total." : "A taxa para este local será confirmada no WhatsApp."
                     : "O prazo para retirada será confirmado no WhatsApp."}
                 </small>
                 <button

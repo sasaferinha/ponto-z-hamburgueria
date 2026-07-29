@@ -138,7 +138,7 @@ export default function AdminPage() {
             <div className="order-head"><div><span>Pedido #{order.id}</span><h2>{order.customerName}</h2></div><time>{new Date(order.createdAt + "Z").toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</time></div>
             <div className="order-items">{items.map((item, index) => <div key={`${item.name}-${index}`}><p><b>{item.quantity}x</b> {item.name}</p>{item.addOns.map((addOn) => <small key={addOn.name}>+ {addOn.name}</small>)}</div>)}</div>
             <div className="order-address"><b>{order.orderMode === "entrega" ? "Entrega" : "Retirada no balcão"}</b>{order.orderMode === "entrega" && <span>{order.street}, {order.addressDetails || "s/n"}<br />{order.neighborhood}</span>}</div>
-            <div className="order-total"><span>Total dos itens</span><b>{money(order.total)}</b></div>
+            <div className="order-total"><span>Total do pedido</span><b>{money(order.total)}</b></div>
             <label className="status-select"><span>Situação</span><select value={order.status} onChange={(event) => void updateStatus(order.id, event.target.value)}>{Object.entries(statusLabels).map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
             <button className="print-order" onClick={() => printOrder(order)}>Imprimir comanda</button>
           </article>
