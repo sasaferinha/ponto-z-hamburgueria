@@ -210,8 +210,6 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 .status-select { display: grid; gap: 6px; }.status-select span { font-size: 11px; font-weight: 900; text-transform: uppercase; color: #6e655e; }
 .status-select select { width: 100%; border: 1px solid #cfc8c1; border-radius: 9px; padding: 11px; background: white; font-size: 16px; font-weight: 800; }
 .print-order { width: 100%; margin-top: 9px; border: 1px solid #c8b8ab; border-radius: 9px; padding: 11px; background: transparent; color: #372a22; font-weight: 900; cursor: pointer; }
-.view-order { width: 100%; margin-top: 12px; border: 0; border-radius: 9px; padding: 12px; background: var(--orange); color: white; font-weight: 900; cursor: pointer; }
-.view-order.is-viewed { background: #ded9d3; color: #554b44; }
 .admin-empty { grid-column: 1 / -1; min-height: 240px; display: grid; place-content: center; gap: 8px; text-align: center; color: #6d635c; }.admin-empty b { color: #2c2520; font-size: 20px; }
 
 .customizer-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(20, 16, 12, .7); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 18px; }

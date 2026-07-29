@@ -123,13 +123,12 @@ export default function AdminPage() {
           <div className="orders-group-heading"><div><span>{group.unseen ? "Aguardando sua atenção" : "Pedidos conferidos"}</span><h2>{group.title}</h2></div><b>{group.orders.length}</b></div>
           {group.orders.length === 0 ? <p className="orders-group-empty">Nenhum pedido nesta lista.</p> : <div className="order-board">
         {group.orders.map((order) => { const items = JSON.parse(order.itemsJson) as Item[]; return (
-          <article className={`order-card status-${order.status} ${order.viewed ? "viewed" : "not-viewed"}`} key={order.id}>
+          <article className={`order-card status-${order.status} ${order.viewed ? "viewed" : "not-viewed"}`} key={order.id} onClick={() => { if (!order.viewed) void updateViewed(order.id, true); }}>
             <div className="order-head"><div><span>Pedido #{order.id}</span><h2>{order.customerName}</h2></div><time>{new Date(order.createdAt + "Z").toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</time></div>
             <div className="order-items">{items.map((item, index) => <div key={`${item.name}-${index}`}><p><b>{item.quantity}x</b> {item.name}</p>{item.addOns.map((addOn) => <small key={addOn.name}>+ {addOn.name}</small>)}</div>)}</div>
             <div className="order-address"><b>{order.orderMode === "entrega" ? "Entrega" : "Retirada no balcão"}</b>{order.orderMode === "entrega" && <span>{order.street}, {order.addressDetails || "s/n"}<br />{order.neighborhood}</span>}</div>
             <div className="order-total"><span>Total dos itens</span><b>{money(order.total)}</b></div>
             <label className="status-select"><span>Situação</span><select value={order.status} onChange={(event) => void updateStatus(order.id, event.target.value)}>{Object.entries(statusLabels).map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-            <button className={`view-order ${order.viewed ? "is-viewed" : ""}`} onClick={() => void updateViewed(order.id, !order.viewed)}>{order.viewed ? "Marcar como não visualizado" : "Marcar como visualizado"}</button>
             <button className="print-order" onClick={() => printOrder(order)}>Imprimir comanda</button>
           </article>
         ); })}</div>}
