@@ -17,7 +17,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filter, setFilter] = useState("ativos");
+  const [filter, setFilter] = useState("nao-visualizados");
   const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos" });
   const [savingSettings, setSavingSettings] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -121,7 +121,6 @@ export default function AdminPage() {
       </section>
       <nav className="admin-filters" aria-label="Filtrar pedidos">
         {[
-          ['ativos', 'Ativos'],
           ['nao-visualizados', `Não visualizados (${orders.filter((order) => !order.viewed).length})`],
           ['visualizados', `Já visualizados (${orders.filter((order) => order.viewed).length})`],
           ['todos', 'Todos'],
