@@ -11,6 +11,7 @@ export const orders = sqliteTable("orders", {
   itemsJson: text("items_json").notNull(),
   total: integer("total_cents").notNull(),
   status: text("status").notNull().default("novo"),
+  viewed: integer("viewed", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });

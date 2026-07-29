@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 type Item = { name: string; quantity: number; price: number; addOns: { name: string; price: number }[] };
 type Order = {
   id: number; customerName: string; orderMode: string; neighborhood: string; street: string;
-  addressDetails: string; itemsJson: string; total: number; status: string; createdAt: string;
+  addressDetails: string; itemsJson: string; total: number; status: string; viewed: boolean; createdAt: string;
 };
 
 const statusLabels: Record<string, string> = {
@@ -74,6 +74,18 @@ export default function AdminPage() {
     }
   };
 
+  const updateViewed = async (id: number, viewed: boolean) => {
+    setOrders((current) => current.map((order) => order.id === id ? { ...order, viewed } : order));
+    try {
+      const response = await fetch(`/api/orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ viewed }) });
+      if (!response.ok) throw new Error("Falha ao atualizar");
+      setError("");
+    } catch {
+      setOrders((current) => current.map((order) => order.id === id ? { ...order, viewed: !viewed } : order));
+      setError("Não foi possível salvar a visualização. Tente novamente.");
+    }
+  };
+
   const printOrder = (order: Order) => {
     const items = JSON.parse(order.itemsJson) as Item[];
     const popup = window.open("", "_blank", "width=420,height=720");
@@ -86,6 +98,8 @@ export default function AdminPage() {
   if (loading) return <main className="admin-loading">Carregando painel...</main>;
 
   const visible = orders.filter((order) => filter === "todos" || (filter === "ativos" ? !["finalizado", "cancelado"].includes(order.status) : order.status === filter));
+  const unseenOrders = visible.filter((order) => !order.viewed);
+  const seenOrders = visible.filter((order) => order.viewed);
   const activeCount = orders.filter((order) => !["finalizado", "cancelado"].includes(order.status)).length;
   return (
     <main className="admin-shell">
@@ -103,19 +117,24 @@ export default function AdminPage() {
         {[['ativos','Ativos'],['novo','Novos'],['todos','Todos']].map(([value,label]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}</button>)}
       </nav>
       {error && <p className="admin-error">{error}</p>}
-      <section className="order-board">
-        {visible.length === 0 && <div className="admin-empty"><b>Nenhum pedido nesta etapa</b><span>Os novos pedidos aparecerão aqui automaticamente.</span></div>}
-        {visible.map((order) => { const items = JSON.parse(order.itemsJson) as Item[]; return (
-          <article className={`order-card status-${order.status}`} key={order.id}>
+      {visible.length === 0 && <div className="admin-empty"><b>Nenhum pedido nesta etapa</b><span>Os novos pedidos aparecerão aqui automaticamente.</span></div>}
+      {[{ title: "Não visualizados", orders: unseenOrders, unseen: true }, { title: "Já visualizados", orders: seenOrders, unseen: false }].map((group) => (
+        <section className={`admin-orders-group ${group.unseen ? "unseen" : "seen"}`} key={group.title}>
+          <div className="orders-group-heading"><div><span>{group.unseen ? "Aguardando sua atenção" : "Pedidos conferidos"}</span><h2>{group.title}</h2></div><b>{group.orders.length}</b></div>
+          {group.orders.length === 0 ? <p className="orders-group-empty">Nenhum pedido nesta lista.</p> : <div className="order-board">
+        {group.orders.map((order) => { const items = JSON.parse(order.itemsJson) as Item[]; return (
+          <article className={`order-card status-${order.status} ${order.viewed ? "viewed" : "not-viewed"}`} key={order.id}>
             <div className="order-head"><div><span>Pedido #{order.id}</span><h2>{order.customerName}</h2></div><time>{new Date(order.createdAt + "Z").toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</time></div>
             <div className="order-items">{items.map((item, index) => <div key={`${item.name}-${index}`}><p><b>{item.quantity}x</b> {item.name}</p>{item.addOns.map((addOn) => <small key={addOn.name}>+ {addOn.name}</small>)}</div>)}</div>
             <div className="order-address"><b>{order.orderMode === "entrega" ? "Entrega" : "Retirada no balcão"}</b>{order.orderMode === "entrega" && <span>{order.street}, {order.addressDetails || "s/n"}<br />{order.neighborhood}</span>}</div>
             <div className="order-total"><span>Total dos itens</span><b>{money(order.total)}</b></div>
             <label className="status-select"><span>Situação</span><select value={order.status} onChange={(event) => void updateStatus(order.id, event.target.value)}>{Object.entries(statusLabels).map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
+            <button className={`view-order ${order.viewed ? "is-viewed" : ""}`} onClick={() => void updateViewed(order.id, !order.viewed)}>{order.viewed ? "Marcar como não visualizado" : "Marcar como visualizado"}</button>
             <button className="print-order" onClick={() => printOrder(order)}>Imprimir comanda</button>
           </article>
-        ); })}
-      </section>
+        ); })}</div>}
+        </section>
+      ))}
     </main>
   );
 }
