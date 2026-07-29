@@ -1,0 +1,1 @@
+ALTER TABLE `orders` ADD `viewed` integer DEFAULT false NOT NULL;

@@ -1,3 +1,4 @@
+// @ts-expect-error Virtual module supplied by Cloudflare in the Sites deployment.
 import { env } from "cloudflare:workers";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./schema";
