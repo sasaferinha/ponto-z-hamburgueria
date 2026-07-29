@@ -165,6 +165,7 @@ export default function Home() {
   const [neighborhood, setNeighborhood] = useState("");
   const [street, setStreet] = useState("");
   const [addressDetails, setAddressDetails] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
   const [sendingOrder, setSendingOrder] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos" });
@@ -270,7 +271,7 @@ export default function Home() {
       orderMode === "entrega"
         ? `Entrega em: ${street.trim()}, ${addressDetails.trim() || "sem número informado"} - Bairro ${neighborhood.trim()}`
         : "Forma de recebimento: Retirada no balcão",
-      "Forma de pagamento:",
+      `Forma de pagamento: ${paymentMethod}`,
     ].join("\n");
     const whatsappWindow = window.open("about:blank", "_blank");
     try {
@@ -278,7 +279,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerName, orderMode, neighborhood, street, addressDetails, total,
+          customerName, orderMode, neighborhood, street, addressDetails, paymentMethod, total,
           items: Object.values(cart).map(({ name, quantity, price, addOns }) => ({ name, quantity, price, addOns })),
         }),
       });
@@ -590,6 +591,24 @@ export default function Home() {
                       <p className="delivery-notice">O valor da entrega será informado no WhatsApp.</p>
                     </div>
                   )}
+                  <fieldset className="payment-fieldset">
+                    <legend>Forma de pagamento</legend>
+                    <div className="payment-mode" role="radiogroup" aria-label="Forma de pagamento">
+                      {["Pix", "Dinheiro", "Cartão de crédito", "Cartão de débito"].map((method) => (
+                        <button
+                          type="button"
+                          role="radio"
+                          aria-checked={paymentMethod === method}
+                          className={paymentMethod === method ? "selected" : ""}
+                          onClick={() => setPaymentMethod(method)}
+                          key={method}
+                        >
+                          <span className="payment-mark" aria-hidden="true" />
+                          <b>{method}</b>
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
                 </section>
                 <div><span>Total dos itens</span><b>{money(total)}</b></div>
                 <small>
@@ -604,16 +623,17 @@ export default function Home() {
                     sendingOrder ||
                     !storeSettings.isOpen ||
                     !customerName.trim() ||
+                    !paymentMethod ||
                     (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))
                   }
                 >
                   {!storeSettings.isOpen ? "Hamburgueria fechada" : sendingOrder ? "Registrando pedido..." : "Enviar pedido no WhatsApp"} <span>↗</span>
                 </button>
                 {orderError && <p className="form-error" role="alert">{orderError}</p>}
-                {(!customerName.trim() ||
+                {(!customerName.trim() || !paymentMethod ||
                   (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))) && (
                   <p className="form-hint">
-                    Preencha seu nome{orderMode === "entrega" ? ", bairro e rua" : ""} para continuar.
+                    Preencha seu nome{orderMode === "entrega" ? ", bairro e rua" : ""} e selecione a forma de pagamento para continuar.
                   </p>
                 )}
               </div>
