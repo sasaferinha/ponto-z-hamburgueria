@@ -97,7 +97,13 @@ export default function AdminPage() {
 
   if (loading) return <main className="admin-loading">Carregando painel...</main>;
 
-  const visible = orders.filter((order) => filter === "todos" || (filter === "ativos" ? !["finalizado", "cancelado"].includes(order.status) : order.status === filter));
+  const visible = orders.filter((order) => {
+    if (filter === "todos") return true;
+    if (filter === "ativos") return !["finalizado", "cancelado"].includes(order.status);
+    if (filter === "visualizados") return order.viewed;
+    if (filter === "nao-visualizados") return !order.viewed;
+    return order.status === filter;
+  });
   const unseenOrders = visible.filter((order) => !order.viewed);
   const seenOrders = visible.filter((order) => order.viewed);
   const activeCount = orders.filter((order) => !["finalizado", "cancelado"].includes(order.status)).length;
@@ -114,7 +120,12 @@ export default function AdminPage() {
         <button className="save-store-settings" onClick={() => void saveSettings()} disabled={savingSettings || !storeSettings.deliveryTime.trim()}>{savingSettings ? "Salvando..." : "Salvar funcionamento"}</button>
       </section>
       <nav className="admin-filters" aria-label="Filtrar pedidos">
-        {[['ativos','Ativos'],['novo','Novos'],['todos','Todos']].map(([value,label]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}</button>)}
+        {[
+          ['ativos', 'Ativos'],
+          ['nao-visualizados', `Não visualizados (${orders.filter((order) => !order.viewed).length})`],
+          ['visualizados', `Já visualizados (${orders.filter((order) => order.viewed).length})`],
+          ['todos', 'Todos'],
+        ].map(([value,label]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}</button>)}
       </nav>
       {error && <p className="admin-error">{error}</p>}
       {visible.length === 0 && <div className="admin-empty"><b>Nenhum pedido nesta etapa</b><span>Os novos pedidos aparecerão aqui automaticamente.</span></div>}
