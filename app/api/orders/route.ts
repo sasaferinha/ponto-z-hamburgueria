@@ -1,10 +1,10 @@
 import { desc } from "drizzle-orm";
-import { getDb } from "../../../db";
-import { orders } from "../../../db/schema";
+import { proxyDataRequest, usesRemoteData } from "../data-proxy";
 
 type OrderItem = { name: string; quantity: number; price: number; addOns: { name: string; price: number }[] };
 
 export async function POST(request: Request) {
+  if (usesRemoteData()) return proxyDataRequest(request, "/api/orders");
   const data = (await request.json()) as {
     customerName?: string; orderMode?: string; neighborhood?: string; street?: string;
     addressDetails?: string; items?: OrderItem[]; total?: number;
@@ -20,6 +20,8 @@ export async function POST(request: Request) {
   if (Math.abs(calculatedTotal - Number(data.total)) > 0.01) {
     return Response.json({ error: "Total inválido" }, { status: 400 });
   }
+  const { getDb } = await import("../../../db");
+  const { orders } = await import("../../../db/schema");
   const [order] = await getDb().insert(orders).values({
     customerName: data.customerName.trim(), orderMode: data.orderMode!,
     neighborhood: data.neighborhood?.trim() ?? "", street: data.street?.trim() ?? "",
@@ -30,6 +32,9 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
+  if (usesRemoteData()) return proxyDataRequest(new Request("http://local/api/orders"), "/api/orders");
+  const { getDb } = await import("../../../db");
+  const { orders } = await import("../../../db/schema");
   const rows = await getDb().select().from(orders).orderBy(desc(orders.createdAt), desc(orders.id)).limit(200);
   return Response.json({ orders: rows });
 }
