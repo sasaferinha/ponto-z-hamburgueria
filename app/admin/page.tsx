@@ -18,7 +18,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("nao-visualizados");
-  const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos" });
+  const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos", pickupTime: "20 a 30 minutos" });
   const [savingSettings, setSavingSettings] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const loadingOrders = useRef(false);
@@ -117,7 +117,8 @@ export default function AdminPage() {
           <button className={!storeSettings.isOpen ? "selected closed" : ""} onClick={() => setStoreSettings((current) => ({ ...current, isOpen: false }))}>Fechado</button>
         </div>
         <label><span>Tempo estimado de entrega</span><input value={storeSettings.deliveryTime} onChange={(event) => setStoreSettings((current) => ({ ...current, deliveryTime: event.target.value }))} placeholder="Ex.: 40 a 60 minutos" maxLength={60} /></label>
-        <button className="save-store-settings" onClick={() => void saveSettings()} disabled={savingSettings || !storeSettings.deliveryTime.trim()}>{savingSettings ? "Salvando..." : "Salvar funcionamento"}</button>
+        <label><span>Tempo estimado de retirada</span><input value={storeSettings.pickupTime} onChange={(event) => setStoreSettings((current) => ({ ...current, pickupTime: event.target.value }))} placeholder="Ex.: 20 a 30 minutos" maxLength={60} /></label>
+        <button className="save-store-settings" onClick={() => void saveSettings()} disabled={savingSettings || !storeSettings.deliveryTime.trim() || !storeSettings.pickupTime.trim()}>{savingSettings ? "Salvando..." : "Salvar funcionamento"}</button>
       </section>
       <nav className="admin-filters" aria-label="Filtrar pedidos">
         {[

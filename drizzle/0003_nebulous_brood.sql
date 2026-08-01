@@ -1,0 +1,1 @@
+ALTER TABLE `store_settings` ADD `pickup_time` text DEFAULT '20 a 30 minutos' NOT NULL;

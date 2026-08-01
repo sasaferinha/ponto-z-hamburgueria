@@ -232,7 +232,7 @@ export default function Home() {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [sendingOrder, setSendingOrder] = useState(false);
   const [orderError, setOrderError] = useState("");
-  const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos" });
+  const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos", pickupTime: "20 a 30 minutos" });
 
   useEffect(() => {
     fetch("/api/settings", { cache: "no-store" })
@@ -340,6 +340,9 @@ export default function Home() {
       orderMode === "entrega"
         ? `Entrega em: ${street.trim()}, ${addressDetails.trim() || "sem número informado"} - Bairro ${neighborhood.trim()}`
         : "Forma de recebimento: Retirada no balcão",
+      orderMode === "entrega"
+        ? `Tempo estimado de entrega: ${storeSettings.deliveryTime}`
+        : `Tempo estimado de retirada: ${storeSettings.pickupTime}`,
       `Forma de pagamento: ${paymentMethod}`,
     ].join("\n");
     const whatsappWindow = window.open("about:blank", "_blank");
@@ -420,7 +423,7 @@ export default function Home() {
 
       <section className="store-strip">
         <div className={storeSettings.isOpen ? "store-open" : "store-closed"}><span className="status-dot" /><b>{storeSettings.isOpen ? "Aberto agora" : "Fechado no momento"}</b><small>Funcionamento: 18h às 00h</small></div>
-        <div><b>Delivery e retirada</b><small>{storeSettings.isOpen ? `Entrega estimada: ${storeSettings.deliveryTime}` : "Novos pedidos temporariamente pausados"}</small></div>
+        <div><b>Delivery e retirada</b><small>{storeSettings.isOpen ? `Entrega: ${storeSettings.deliveryTime} · Retirada: ${storeSettings.pickupTime}` : "Novos pedidos temporariamente pausados"}</small></div>
         <div><b>Rua Evaristo Gomes Guerra, 509</b><small>Jardim Glória · Lavras/MG</small></div>
       </section>
 
@@ -703,7 +706,7 @@ export default function Home() {
                 <small>
                   {orderMode === "entrega"
                     ? deliveryFee !== undefined ? "A taxa de entrega já está incluída no total." : "A taxa para este local será confirmada no WhatsApp."
-                    : "O prazo para retirada será confirmado no WhatsApp."}
+                    : `Retirada estimada em ${storeSettings.pickupTime}.`}
                 </small>
                 <button
                   className="whatsapp-order"
