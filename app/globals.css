@@ -165,6 +165,10 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 .payment-mark { width: 15px; height: 15px; flex: 0 0 15px; border: 2px solid #aaa198; border-radius: 50%; box-shadow: inset 0 0 0 3px var(--surface); }
 .payment-mode button.selected { border-color: var(--orange); background: #fff4ed; box-shadow: inset 0 0 0 1px var(--orange); }
 .payment-mode button.selected .payment-mark { border-color: var(--orange); background: var(--orange); box-shadow: inset 0 0 0 3px #fff4ed; }
+.checkout-details .cash-change-field { margin-top: 12px; padding: 13px; border-radius: 11px; background: #eeeae5; }
+.cash-change-field small { margin: 0; color: #776e67; font-size: 10px; }
+.cash-change-field em { color: #a72d1f; font-size: 11px; font-style: normal; font-weight: 700; }
+.cash-change-field input[aria-invalid="true"] { border-color: #c74736; box-shadow: 0 0 0 3px #f8dcd7; }
 .form-hint { color: #936143; font-size: 11px; line-height: 1.4; text-align: center; margin: 9px 0 0; }
 .form-error, .admin-error { color: #a72d1f; background: #ffebe7; border: 1px solid #efb4aa; border-radius: 10px; padding: 11px 12px; font-size: 12px; line-height: 1.4; }
 

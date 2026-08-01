@@ -230,6 +230,7 @@ export default function Home() {
   const [street, setStreet] = useState("");
   const [addressDetails, setAddressDetails] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [cashAmount, setCashAmount] = useState("");
   const [sendingOrder, setSendingOrder] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos", pickupTime: "20 a 30 minutos" });
@@ -257,6 +258,12 @@ export default function Home() {
   );
   const deliveryFee = orderMode === "entrega" ? deliveryFees[neighborhood] : 0;
   const orderTotal = total + (deliveryFee ?? 0);
+  const cashAmountValue = (() => {
+    const normalized = cashAmount.trim().replace(/[^\d.,]/g, "");
+    return Number(normalized.includes(",") ? normalized.replace(/\./g, "").replace(",", ".") : normalized);
+  })();
+  const cashAmountInvalid = paymentMethod === "Dinheiro" && Boolean(cashAmount.trim()) &&
+    (!Number.isFinite(cashAmountValue) || cashAmountValue < orderTotal);
   const currentAddOns = customizing?.category === "batatas" ? friesAddOns : addOns;
 
   const addDirect = (product: Product) => {
@@ -344,6 +351,9 @@ export default function Home() {
         ? `Tempo estimado de entrega: ${storeSettings.deliveryTime}`
         : `Tempo estimado de retirada: ${storeSettings.pickupTime}`,
       `Forma de pagamento: ${paymentMethod}`,
+      ...(paymentMethod === "Dinheiro"
+        ? [cashAmount.trim() ? `Troco para: ${money(cashAmountValue)}` : "Troco: nÃ£o precisa"]
+        : []),
     ].join("\n");
     const whatsappWindow = window.open("about:blank", "_blank");
     try {
@@ -691,6 +701,22 @@ export default function Home() {
                         </button>
                       ))}
                     </div>
+                    {paymentMethod === "Dinheiro" && (
+                      <label className="cash-change-field">
+                        <span>Troco para quanto?</span>
+                        <input
+                          value={cashAmount}
+                          onChange={(event) => setCashAmount(event.target.value)}
+                          placeholder="Ex.: 50,00"
+                          inputMode="decimal"
+                          autoComplete="off"
+                          maxLength={12}
+                          aria-invalid={cashAmountInvalid}
+                        />
+                        <small>Deixe em branco se nÃ£o precisar de troco.</small>
+                        {cashAmountInvalid && <em>Informe um valor igual ou maior que {money(orderTotal)}.</em>}
+                      </label>
+                    )}
                   </fieldset>
                 </section>
                 <div className="order-summary">
@@ -713,16 +739,19 @@ export default function Home() {
                     !storeSettings.isOpen ||
                     !customerName.trim() ||
                     !paymentMethod ||
+                    cashAmountInvalid ||
                     (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))
                   }
                 >
                   {!storeSettings.isOpen ? "Hamburgueria fechada" : sendingOrder ? "Registrando pedido..." : "Enviar pedido no WhatsApp"} <span>↗</span>
                 </button>
                 {orderError && <p className="form-error" role="alert">{orderError}</p>}
-                {(!customerName.trim() || !paymentMethod ||
+                {(!customerName.trim() || !paymentMethod || cashAmountInvalid ||
                   (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))) && (
                   <p className="form-hint">
-                    Preencha seu nome{orderMode === "entrega" ? ", bairro e rua" : ""} e selecione a forma de pagamento para continuar.
+                    {cashAmountInvalid
+                      ? `O valor para troco precisa ser igual ou maior que ${money(orderTotal)}.`
+                      : `Preencha seu nome${orderMode === "entrega" ? ", bairro e rua" : ""} e selecione a forma de pagamento para continuar.`}
                   </p>
                 )}
               </div>
