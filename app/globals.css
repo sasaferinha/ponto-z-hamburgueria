@@ -52,12 +52,6 @@ a { color: inherit; text-decoration: none; }
 .hero-meta { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 34px; font-size: 14px; font-weight: 700; }
 .hero-meta b { color: var(--gold); margin-right: 8px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
 .hero-art { position: relative; display: grid; place-items: center; min-height: 330px; }
-.hero-emblem {
-  position: absolute; z-index: 2; top: -24px; left: -18px; width: clamp(108px, 10vw, 148px); aspect-ratio: 1;
-  display: grid; place-items: center; overflow: hidden; border-radius: 50%; background: #090807;
-  border: 3px solid #ef6b2e; box-shadow: 0 0 0 7px #17130f, 0 18px 38px #0007;
-}
-.hero-emblem img { width: 100%; height: 100%; display: block; object-fit: cover; transform: scale(1.08); }
 .hero-photo {
   width: min(440px, 37vw); aspect-ratio: 1; border-radius: 50%; overflow: hidden;
   box-shadow: 0 30px 60px rgba(42, 18, 5, .32);
@@ -246,8 +240,7 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; background: linear-gradient(145deg, #1a1612 0 72%, #ef6b2e 72%); padding-bottom: 40px; }
-  .hero-art { min-height: 360px; padding-top: 76px; }
-  .hero-emblem { top: 15px; left: 50%; width: 118px; transform: translateX(-50%); }
+  .hero-art { min-height: 300px; }
   .hero-photo { width: min(360px, 60vw); }
   .store-strip { grid-template-columns: 1fr; margin: 0 20px; }
   .store-strip > div { border-right: 0; border-bottom: 1px solid var(--line); padding: 18px 4px; }
@@ -268,8 +261,7 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
   .hero h1 { font-size: 44px; line-height: 1.02; letter-spacing: -.025em; word-spacing: .05em; }
   .hero p { font-size: 16px; }
   .hero-meta { gap: 13px; flex-direction: column; margin-top: 24px; }
-  .hero-art { min-height: 350px; padding-top: 82px; }
-  .hero-emblem { top: 20px; width: 112px; }
+  .hero-art { min-height: 250px; }
   .hero-photo { width: min(260px, 68vw); }
   .store-strip > div:nth-child(2) b, .store-strip > div:nth-child(2) small { grid-column: 1 / -1; }
   .menu-shell { padding: 65px 15px 100px; }
