@@ -35,6 +35,6 @@ export async function GET() {
   if (usesRemoteData()) return proxyDataRequest(new Request("http://local/api/orders"), "/api/orders");
   const { getDb } = await import("../../../db");
   const { orders } = await import("../../../db/schema");
-  const rows = await getDb().select().from(orders).orderBy(desc(orders.createdAt), desc(orders.id)).limit(200);
+  const rows = await getDb().select().from(orders).orderBy(desc(orders.createdAt), desc(orders.id));
   return Response.json({ orders: rows });
 }

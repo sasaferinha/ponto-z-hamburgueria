@@ -12,6 +12,20 @@ const statusLabels: Record<string, string> = {
   novo: "Novo", preparo: "Em preparo", pronto: "Pronto", finalizado: "Finalizado", cancelado: "Cancelado",
 };
 const money = (cents: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
+const orderDate = (createdAt: string) => new Date(createdAt.endsWith("Z") ? createdAt : `${createdAt}Z`);
+const orderDayKey = (createdAt: string) => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(orderDate(createdAt));
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
+};
+const orderDayLabel = (createdAt: string) => {
+  const formatted = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo", weekday: "long", day: "2-digit", month: "2-digit", year: "numeric",
+  }).format(orderDate(createdAt));
+  return formatted.charAt(0).toLocaleUpperCase("pt-BR") + formatted.slice(1).replace(",", " ·");
+};
 
 export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -111,6 +125,19 @@ export default function AdminPage() {
   });
   const unseenOrders = visible.filter((order) => !order.viewed);
   const seenOrders = visible.filter((order) => order.viewed);
+  const ordersByDay = visible.reduce<Record<string, Order[]>>((groups, order) => {
+    const key = orderDayKey(order.createdAt);
+    (groups[key] ??= []).push(order);
+    return groups;
+  }, {});
+  const displayGroups: { title: string; subtitle: string; orders: Order[]; kind: "unseen" | "seen" | "day" }[] = filter === "todos"
+    ? Object.values(ordersByDay).map((dailyOrders) => ({
+        title: orderDayLabel(dailyOrders[0].createdAt), subtitle: "Pedidos realizados neste dia", orders: dailyOrders, kind: "day",
+      }))
+    : [
+        { title: "Não visualizados", subtitle: "Aguardando sua atenção", orders: unseenOrders, kind: "unseen" },
+        { title: "Já visualizados", subtitle: "Pedidos conferidos", orders: seenOrders, kind: "seen" },
+      ];
   const activeCount = orders.filter((order) => !["finalizado", "cancelado"].includes(order.status)).length;
   return (
     <main className="admin-shell">
@@ -134,9 +161,9 @@ export default function AdminPage() {
       </nav>
       {error && <p className="admin-error">{error}</p>}
       {visible.length === 0 && <div className="admin-empty"><b>Nenhum pedido nesta etapa</b><span>Os novos pedidos aparecerão aqui automaticamente.</span></div>}
-      {[{ title: "Não visualizados", orders: unseenOrders, unseen: true }, { title: "Já visualizados", orders: seenOrders, unseen: false }].map((group) => (
-        <section className={`admin-orders-group ${group.unseen ? "unseen" : "seen"}`} key={group.title}>
-          <div className="orders-group-heading"><div><span>{group.unseen ? "Aguardando sua atenção" : "Pedidos conferidos"}</span><h2>{group.title}</h2></div><b>{group.orders.length}</b></div>
+      {displayGroups.map((group) => (
+        <section className={`admin-orders-group ${group.kind}`} key={group.title}>
+          <div className="orders-group-heading"><div><span>{group.subtitle}</span><h2>{group.title}</h2></div><b>{group.orders.length}</b></div>
           {group.orders.length === 0 ? <p className="orders-group-empty">Nenhum pedido nesta lista.</p> : <div className="order-board">
         {group.orders.map((order) => { const items = JSON.parse(order.itemsJson) as Item[]; return (
           <article className={`order-card status-${order.status} ${order.viewed ? "viewed" : "not-viewed"}`} key={order.id} onClick={() => { if (!order.viewed) void updateViewed(order.id, true); }}>
