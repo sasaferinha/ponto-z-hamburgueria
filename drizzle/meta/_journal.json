@@ -29,6 +29,13 @@
       "when": 1785575566068,
       "tag": "0003_nebulous_brood",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1785726517667,
+      "tag": "0004_typical_black_tarantula",
+      "breakpoints": true
     }
   ]
 }

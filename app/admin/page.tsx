@@ -5,7 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 type Item = { name: string; quantity: number; price: number; addOns: { name: string; price: number }[] };
 type Order = {
   id: number; customerName: string; orderMode: string; neighborhood: string; street: string;
-  addressDetails: string; itemsJson: string; total: number; status: string; viewed: boolean; createdAt: string;
+  addressDetails: string; paymentMethod: string; cashChangeChoice: string; cashAmountCents: number | null;
+  itemsJson: string; total: number; status: string; viewed: boolean; createdAt: string;
 };
 
 const statusLabels: Record<string, string> = {
@@ -120,7 +121,8 @@ export default function AdminPage() {
     const fulfillmentDetails = order.orderMode === "entrega"
       ? `<br><b>Endereço:</b> ${order.street}, ${order.addressDetails || "s/n"} - ${order.neighborhood}<br><b>Taxa de entrega:</b> ${deliveryItem ? money(Math.round(deliveryItem.price * 100)) : "A confirmar"}<br><b>Tempo estimado:</b> ${storeSettings.deliveryTime}`
       : `<br><b>Tempo estimado para retirada:</b> ${storeSettings.pickupTime}`;
-    popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido #${order.id}</title><style>body{font:14px Arial;max-width:320px;margin:20px auto;color:#111}.head{text-align:center;border-bottom:2px dashed #111;padding-bottom:12px}.item{display:flex;justify-content:space-between;margin-top:12px;gap:12px}small{display:block;margin:3px 0 0 14px}.info{border-top:2px dashed #111;margin-top:15px;padding-top:12px;line-height:1.7}.total{display:flex;justify-content:space-between;font-size:18px;border-top:2px solid #111;margin-top:15px;padding-top:10px}@media print{body{margin:0}}</style></head><body><div class="head"><b>PONTO Z HAMBURGUERIA</b><h2>Pedido #${order.id}</h2><span>${new Date(order.createdAt + "Z").toLocaleString("pt-BR")}</span></div>${rows}<div class="info"><b>Cliente:</b> ${order.customerName}<br><b>Recebimento:</b> ${order.orderMode === "entrega" ? "Entrega" : "Retirada"}${fulfillmentDetails}</div><div class="total"><b>Total</b><b>${money(order.total)}</b></div><script>window.onload=()=>window.print()<\/script></body></html>`);
+    const paymentDetails = `<br><b>Forma de pagamento:</b> ${order.paymentMethod || "N\u00e3o informado"}${order.paymentMethod === "Dinheiro" ? order.cashChangeChoice === "yes" && order.cashAmountCents ? `<br><b>Troco para:</b> ${money(order.cashAmountCents)}` : `<br><b>Troco:</b> N\u00e3o precisa` : ""}`;
+    popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido #${order.id}</title><style>body{font:14px Arial;max-width:320px;margin:20px auto;color:#111}.head{text-align:center;border-bottom:2px dashed #111;padding-bottom:12px}.item{display:flex;justify-content:space-between;margin-top:12px;gap:12px}small{display:block;margin:3px 0 0 14px}.info{border-top:2px dashed #111;margin-top:15px;padding-top:12px;line-height:1.7}.total{display:flex;justify-content:space-between;font-size:18px;border-top:2px solid #111;margin-top:15px;padding-top:10px}@media print{body{margin:0}}</style></head><body><div class="head"><b>PONTO Z HAMBURGUERIA</b><h2>Pedido #${order.id}</h2><span>${new Date(order.createdAt + "Z").toLocaleString("pt-BR")}</span></div>${rows}<div class="info"><b>Cliente:</b> ${order.customerName}<br><b>Recebimento:</b> ${order.orderMode === "entrega" ? "Entrega" : "Retirada"}${fulfillmentDetails}${paymentDetails}</div><div class="total"><b>Total</b><b>${money(order.total)}</b></div><script>window.onload=()=>window.print()<\/script></body></html>`);
     popup.document.close();
   };
 

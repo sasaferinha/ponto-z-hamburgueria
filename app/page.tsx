@@ -389,7 +389,9 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerName, orderMode, neighborhood, street, addressDetails, paymentMethod, total: orderTotal,
+          customerName, orderMode, neighborhood, street, addressDetails, paymentMethod,
+          cashChangeChoice, cashAmount: cashChangeChoice === "yes" ? cashAmountValue : undefined,
+          total: orderTotal,
           items: [
             ...Object.values(cart).map(({ name, quantity, price, addOns }) => ({ name, quantity, price, addOns })),
             ...(orderMode === "entrega" && deliveryFee !== undefined
