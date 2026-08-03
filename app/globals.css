@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: only light;
   --ink: #15120f;
   --cream: #f5ead8;
   --paper: #d6d6d3;
@@ -13,7 +14,7 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; color-scheme: only light; background: var(--paper); }
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Segoe UI", Arial, Helvetica, sans-serif; overflow-x: hidden; }
 button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
