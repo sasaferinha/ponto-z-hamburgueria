@@ -117,7 +117,7 @@ export default function AdminPage() {
     const productItems = items.filter((item) => item.name !== "Taxa de entrega");
     const popup = window.open("", "_blank", "width=420,height=720");
     if (!popup) return;
-    const rows = productItems.map((item) => `<div class="item"><b>${item.quantity}x ${item.name}</b><span>${money(Math.round((item.price + item.addOns.reduce((s, a) => s + a.price, 0)) * item.quantity * 100))}</span></div>${item.addOns.map((a) => `<small>+ ${a.name} — ${money(Math.round(a.price * 100))}${item.quantity > 1 ? " cada" : ""}</small>`).join("")}`).join("");
+    const rows = productItems.map((item) => `<div class="item"><b>${item.quantity}x ${item.name}</b><span>${money(Math.round(item.price * item.quantity * 100))}</span></div>${item.addOns.map((a) => `<small>+ ${a.name} — ${money(Math.round(a.price * 100))}${item.quantity > 1 ? " cada" : ""}</small>`).join("")}`).join("");
     const fulfillmentDetails = order.orderMode === "entrega"
       ? `<br><b>Endereço:</b> ${order.street}, ${order.addressDetails || "s/n"} - ${order.neighborhood}<br><b>Taxa de entrega:</b> ${deliveryItem ? money(Math.round(deliveryItem.price * 100)) : "A confirmar"}<br><b>Tempo estimado:</b> ${storeSettings.deliveryTime}`
       : `<br><b>Tempo estimado para retirada:</b> ${storeSettings.pickupTime}`;
