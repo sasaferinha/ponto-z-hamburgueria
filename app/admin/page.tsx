@@ -125,7 +125,7 @@ export default function AdminPage() {
     const paymentDetails = `<br><b>Forma de pagamento:</b> ${order.paymentMethod || "N\u00e3o informado"}${order.paymentMethod === "Dinheiro" ? order.cashChangeChoice === "yes" && order.cashAmountCents ? `<br><b>Troco para:</b> ${money(order.cashAmountCents)}` : `<br><b>Troco:</b> N\u00e3o precisa` : ""}`;
     popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido #${order.id}</title><style>body{font:14px Arial;max-width:320px;margin:20px auto;color:#111}.head{text-align:center;border-bottom:2px dashed #111;padding-bottom:12px}.item{display:flex;justify-content:space-between;margin-top:12px;gap:12px}small{display:block;margin:3px 0 0 14px}.info{border-top:2px dashed #111;margin-top:15px;padding-top:12px;line-height:1.7}.total{display:flex;justify-content:space-between;font-size:18px;border-top:2px solid #111;margin-top:15px;padding-top:10px}@media print{body{margin:0}}</style></head><body><div class="head"><b>PONTO Z HAMBURGUERIA</b><h2>Pedido #${order.id}</h2><span>${new Date(order.createdAt + "Z").toLocaleString("pt-BR")}</span></div>${rows}<div class="info"><b>Cliente:</b> ${order.customerName}${order.customerPhone ? `<br><b>WhatsApp:</b> ${order.customerPhone}` : ""}<br><b>Recebimento:</b> ${order.orderMode === "entrega" ? "Entrega" : "Retirada"}${fulfillmentDetails}${paymentDetails}</div><div class="total"><b>Total</b><b>${money(order.total)}</b></div><script>window.onload=()=>window.print()<\/script></body></html>`);
     popup.document.close();
-    if (order.customerPhone) {
+    if (order.status === "novo" && order.customerPhone) {
       const digits = order.customerPhone.replace(/\D/g, "");
       const whatsappPhone = digits.startsWith("55") && /^\d{12,13}$/.test(digits) ? digits : `55${digits}`;
       const message = `Ol\u00e1, ${order.customerName}! Seu pedido #${order.id} na Ponto Z j\u00e1 est\u00e1 sendo preparado.`;
@@ -158,6 +158,11 @@ export default function AdminPage() {
         { title: "Já visualizados", subtitle: "Pedidos conferidos", orders: seenOrders, kind: "seen" },
       ];
   const activeCount = orders.filter((order) => !["finalizado", "cancelado"].includes(order.status)).length;
+  const workflowGroups: { title: string; subtitle: string; orders: Order[]; kind: "new" | "preparing" | "finished" }[] = [
+    { title: "Novos", subtitle: "Pedidos aguardando impress\u00e3o", orders: orders.filter((order) => order.status === "novo"), kind: "new" },
+    { title: "Em preparo", subtitle: "Pedidos que est\u00e3o sendo preparados", orders: orders.filter((order) => ["preparo", "pronto"].includes(order.status)), kind: "preparing" },
+    { title: "Finalizados", subtitle: "Pedidos conclu\u00eddos", orders: orders.filter((order) => ["finalizado", "cancelado"].includes(order.status)), kind: "finished" },
+  ];
   return (
     <main className="admin-shell">
       <header className="admin-header"><div><p className="eyebrow">Central de pedidos</p><h1>Ponto Z</h1><span>{activeCount} {activeCount === 1 ? "pedido ativo" : "pedidos ativos"}{lastUpdated ? ` · atualizado às ${lastUpdated.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : ""}</span></div><div><button onClick={() => void loadOrders()}>Atualizar agora</button><a href="/">Ver cardápio</a></div></header>
@@ -180,7 +185,7 @@ export default function AdminPage() {
       </nav>
       {error && <p className="admin-error">{error}</p>}
       {visible.length === 0 && <div className="admin-empty"><b>Nenhum pedido nesta etapa</b><span>Os novos pedidos aparecerão aqui automaticamente.</span></div>}
-      {displayGroups.map((group) => { const isCollapsed = collapsedGroups.has(group.title); return (
+      {workflowGroups.map((group) => { const isCollapsed = collapsedGroups.has(group.title); return (
         <section className={`admin-orders-group ${group.kind}${isCollapsed ? " collapsed" : ""}`} key={group.title}>
           <button className="orders-group-heading" type="button" onClick={() => toggleGroup(group.title)} aria-expanded={!isCollapsed} aria-controls={`orders-${group.title.replace(/[^a-zA-Z0-9]/g, "-")}`}>
             <div><span>{group.subtitle}</span><h2>{group.title}</h2></div>
@@ -195,7 +200,8 @@ export default function AdminPage() {
             <div className="order-address"><b>{order.orderMode === "entrega" ? "Entrega" : "Retirada no balcão"}</b>{order.orderMode === "entrega" && <span>{order.street}, {order.addressDetails || "s/n"}<br />{order.neighborhood}</span>}</div>
             <div className="order-total"><span>Total do pedido</span><b>{money(order.total)}</b></div>
             <label className="status-select"><span>Situação</span><select value={order.status} onChange={(event) => void updateStatus(order.id, event.target.value)}>{Object.entries(statusLabels).map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-            <button className="print-order" onClick={() => printOrder(order)}>{order.customerPhone ? "Imprimir e avisar cliente" : "Imprimir comanda"}</button>
+            {group.kind === "preparing" && <button className="finish-order" onClick={() => void updateStatus(order.id, "finalizado")}>Finalizar pedido</button>}
+            <button className="print-order" onClick={() => printOrder(order)}>{group.kind === "new" && order.customerPhone ? "Imprimir e avisar cliente" : "Reimprimir comanda"}</button>
           </article>
         ); })}</div>}
           </div>
