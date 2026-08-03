@@ -189,9 +189,18 @@ const products: Product[] = [
   ].map(([name, price]) => ({ category: "adicionais", name: String(name), price: Number(price), description: "Adicione ao seu lanche preferido" })),
 
   ...[
-    ["Refrigerante mini 200ml", 3], ["Refrigerante 350ml", 7], ["Refrigerante 600ml", 9],
-    ["Refrigerante 1L", 11], ["Refrigerante 2L", 13], ["Coca-Cola 2L", 16],
-    ["Água", 4], ["Água com gás", 4], ["Cerveja", 8], ["Suco Tial", 7],
+    ["Coca-Cola 350ml", 7], ["Coca-Cola Zero 350ml", 7], ["Sprite 350ml", 7], ["Guaraná 350ml", 7],
+    ["Fanta Laranja 350ml", 7], ["Fanta Maracujá 350ml", 7], ["Fanta Uva 350ml", 7],
+    ["Suco Tial Manga", 7], ["Suco Tial Goiaba", 7], ["Suco Tial Laranja", 7],
+    ["Suco Tial Maracujá", 7], ["Suco Tial Pêssego", 7],
+    ["Suco Del Valle Uva", 7], ["Suco Del Valle Pêssego", 7], ["Suco Del Valle Goiaba", 7], ["Suco Del Valle Manga", 7],
+    ["Coca-Cola Mini 200ml", 3], ["Fanta Laranja Mini 200ml", 3], ["Pepsi Mini 200ml", 3],
+    ["Sprite 600ml", 9], ["Fanta Uva 600ml", 9], ["Fanta Laranja 600ml", 9],
+    ["Coca-Cola 600ml", 9], ["Coca-Cola Zero 600ml", 9],
+    ["Fanta Laranja 1L", 11], ["Pepsi 1L", 11], ["Guaraná 1L", 11],
+    ["Fanta Laranja 2L", 13], ["Fanta Uva 2L", 13], ["Fanta Guaraná 2L", 13],
+    ["Coca-Cola 2L", 16], ["Sprite 2L", 13], ["Sprite Zero 2L", 13],
+    ["Água", 4], ["Água com gás", 4], ["Cerveja", 8],
   ].map(([name, price]) => ({ category: "bebidas", name: String(name), price: Number(price), description: "Geladinho para acompanhar" })),
 ];
 
