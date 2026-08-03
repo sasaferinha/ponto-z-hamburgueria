@@ -6,11 +6,13 @@ type OrderItem = { name: string; quantity: number; price: number; addOns: { name
 export async function POST(request: Request) {
   if (usesRemoteData()) return proxyDataRequest(request, "/api/orders");
   const data = (await request.json()) as {
-    customerName?: string; orderMode?: string; neighborhood?: string; street?: string;
+    customerName?: string; customerPhone?: string; orderMode?: string; neighborhood?: string; street?: string;
     addressDetails?: string; paymentMethod?: string; cashChangeChoice?: string;
     cashAmount?: number; items?: OrderItem[]; total?: number;
   };
-  if (!data.customerName?.trim() || !["entrega", "retirada"].includes(data.orderMode ?? "") || !data.items?.length) {
+  const customerPhone = (data.customerPhone ?? "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  if (!data.customerName?.trim() || !/^\d{10,11}$/.test(customerPhone) ||
+      !["entrega", "retirada"].includes(data.orderMode ?? "") || !data.items?.length) {
     return Response.json({ error: "Pedido incompleto" }, { status: 400 });
   }
   if (data.orderMode === "entrega" && (!data.neighborhood?.trim() || !data.street?.trim())) {
@@ -35,7 +37,7 @@ export async function POST(request: Request) {
   const { getDb } = await import("../../../db");
   const { orders } = await import("../../../db/schema");
   const [order] = await getDb().insert(orders).values({
-    customerName: data.customerName.trim(), orderMode: data.orderMode!,
+    customerName: data.customerName.trim(), customerPhone, orderMode: data.orderMode!,
     neighborhood: data.neighborhood?.trim() ?? "", street: data.street?.trim() ?? "",
     addressDetails: data.addressDetails?.trim() ?? "", paymentMethod: data.paymentMethod!,
     cashChangeChoice: data.paymentMethod === "Dinheiro" ? data.cashChangeChoice! : "",

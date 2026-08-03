@@ -251,6 +251,7 @@ export default function Home() {
   const [customizing, setCustomizing] = useState<Product | null>(null);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [orderMode, setOrderMode] = useState<"entrega" | "retirada">("entrega");
   const [neighborhood, setNeighborhood] = useState("");
   const [street, setStreet] = useState("");
@@ -290,6 +291,8 @@ export default function Home() {
     return Number(normalized.includes(",") ? normalized.replace(/\./g, "").replace(",", ".") : normalized);
   })();
   const cashChangeMissing = paymentMethod === "Dinheiro" && !cashChangeChoice;
+  const customerPhoneDigits = customerPhone.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  const customerPhoneInvalid = !/^\d{10,11}$/.test(customerPhoneDigits);
   const cashAmountInvalid = paymentMethod === "Dinheiro" && cashChangeChoice === "yes" &&
     (!cashAmount.trim() || !Number.isFinite(cashAmountValue) || cashAmountValue < orderTotal);
   const currentAddOns = customizing?.category === "batatas" ? friesAddOns : addOns;
@@ -389,7 +392,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerName, orderMode, neighborhood, street, addressDetails, paymentMethod,
+          customerName, customerPhone: customerPhoneDigits, orderMode, neighborhood, street, addressDetails, paymentMethod,
           cashChangeChoice, cashAmount: cashChangeChoice === "yes" ? cashAmountValue : undefined,
           total: orderTotal,
           items: [
@@ -669,6 +672,20 @@ export default function Home() {
                       autoComplete="name"
                     />
                   </label>
+                  <label>
+                    <span>Seu WhatsApp com DDD</span>
+                    <input
+                      value={customerPhone}
+                      onChange={(event) => setCustomerPhone(event.target.value)}
+                      placeholder="Ex.: (35) 99999-9999"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      maxLength={18}
+                      required
+                      aria-invalid={customerPhone.length > 0 && customerPhoneInvalid}
+                    />
+                  </label>
                   <div className="order-mode" role="group" aria-label="Forma de recebimento">
                     <button
                       className={orderMode === "entrega" ? "selected" : ""}
@@ -804,6 +821,7 @@ export default function Home() {
                     sendingOrder ||
                     !storeSettings.isOpen ||
                     !customerName.trim() ||
+                    customerPhoneInvalid ||
                     !paymentMethod ||
                     cashChangeMissing ||
                     cashAmountInvalid ||
@@ -813,14 +831,16 @@ export default function Home() {
                   {!storeSettings.isOpen ? "Hamburgueria fechada" : sendingOrder ? "Registrando pedido..." : "Enviar pedido no WhatsApp"} <span>↗</span>
                 </button>
                 {orderError && <p className="form-error" role="alert">{orderError}</p>}
-                {(!customerName.trim() || !paymentMethod || cashChangeMissing || cashAmountInvalid ||
+                {(!customerName.trim() || customerPhoneInvalid || !paymentMethod || cashChangeMissing || cashAmountInvalid ||
                   (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))) && (
                   <p className="form-hint">
-                    {cashChangeMissing
+                    {customerPhoneInvalid
+                      ? "Informe um WhatsApp v\u00e1lido com DDD."
+                      : cashChangeMissing
                       ? "Escolha se precisa ou não de troco."
                       : cashAmountInvalid
                       ? `O valor para troco precisa ser igual ou maior que ${money(orderTotal)}.`
-                      : `Preencha seu nome${orderMode === "entrega" ? ", bairro e rua" : ""} e selecione a forma de pagamento para continuar.`}
+                      : `Preencha seu nome e WhatsApp${orderMode === "entrega" ? ", bairro e rua" : ""} e selecione a forma de pagamento para continuar.`}
                   </p>
                 )}
               </div>
