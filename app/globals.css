@@ -291,6 +291,7 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
   .hero-art { min-height: 250px; }
   .hero-photo { width: min(260px, 68vw); }
   .store-strip > div:nth-child(2) b, .store-strip > div:nth-child(2) small { grid-column: 1 / -1; }
+  .store-strip > div:nth-child(2) b { font-size: 26px; line-height: 1.15; }
   .menu-shell { padding: 65px 15px 100px; }
   .menu-heading { align-items: stretch; flex-direction: column; gap: 22px; }
   .search { width: 100%; }
