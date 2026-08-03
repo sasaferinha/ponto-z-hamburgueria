@@ -35,7 +35,17 @@ export default function AdminPage() {
   const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos", pickupTime: "20 a 30 minutos" });
   const [savingSettings, setSavingSettings] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set());
   const loadingOrders = useRef(false);
+
+  const toggleGroup = (groupTitle: string) => {
+    setCollapsedGroups((current) => {
+      const next = new Set(current);
+      if (next.has(groupTitle)) next.delete(groupTitle);
+      else next.add(groupTitle);
+      return next;
+    });
+  };
 
   const loadOrders = useCallback(async () => {
     if (loadingOrders.current) return;
@@ -161,9 +171,13 @@ export default function AdminPage() {
       </nav>
       {error && <p className="admin-error">{error}</p>}
       {visible.length === 0 && <div className="admin-empty"><b>Nenhum pedido nesta etapa</b><span>Os novos pedidos aparecerão aqui automaticamente.</span></div>}
-      {displayGroups.map((group) => (
-        <section className={`admin-orders-group ${group.kind}`} key={group.title}>
-          <div className="orders-group-heading"><div><span>{group.subtitle}</span><h2>{group.title}</h2></div><b>{group.orders.length}</b></div>
+      {displayGroups.map((group) => { const isCollapsed = collapsedGroups.has(group.title); return (
+        <section className={`admin-orders-group ${group.kind}${isCollapsed ? " collapsed" : ""}`} key={group.title}>
+          <button className="orders-group-heading" type="button" onClick={() => toggleGroup(group.title)} aria-expanded={!isCollapsed} aria-controls={`orders-${group.title.replace(/[^a-zA-Z0-9]/g, "-")}`}>
+            <div><span>{group.subtitle}</span><h2>{group.title}</h2></div>
+            <div className="orders-group-actions"><b>{group.orders.length}</b><span className="group-toggle-label">{isCollapsed ? "Abrir" : "Minimizar"}</span><i aria-hidden="true">{isCollapsed ? "+" : "−"}</i></div>
+          </button>
+          <div id={`orders-${group.title.replace(/[^a-zA-Z0-9]/g, "-")}`} hidden={isCollapsed}>
           {group.orders.length === 0 ? <p className="orders-group-empty">Nenhum pedido nesta lista.</p> : <div className="order-board">
         {group.orders.map((order) => { const items = JSON.parse(order.itemsJson) as Item[]; return (
           <article className={`order-card status-${order.status} ${order.viewed ? "viewed" : "not-viewed"}`} key={order.id} onClick={() => { if (!order.viewed) void updateViewed(order.id, true); }}>
@@ -175,8 +189,9 @@ export default function AdminPage() {
             <button className="print-order" onClick={() => printOrder(order)}>Imprimir comanda</button>
           </article>
         ); })}</div>}
+          </div>
         </section>
-      ))}
+      ); })}
     </main>
   );
 }
