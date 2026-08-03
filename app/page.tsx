@@ -8,6 +8,7 @@ type Product = {
   description: string;
   category: string;
   badge?: string;
+  group?: string;
 };
 
 type AddOn = { name: string; price: number };
@@ -22,6 +23,11 @@ const categories = [
   { id: "especiais", label: "Especiais" },
   { id: "batatas", label: "Batata frita" },
   { id: "adicionais", label: "Adicionais" },
+];
+
+const beverageGroupOrder = [
+  "Refrigerantes 350 ml", "Sucos Tial", "Sucos Del Valle", "Refrigerantes Mini 200 ml",
+  "Refrigerantes 600 ml", "Refrigerantes 1 litro", "Refrigerantes 2 litros", "Outras bebidas",
 ];
 
 const lavrasNeighborhoods = [
@@ -201,7 +207,18 @@ const products: Product[] = [
     ["Fanta Laranja 2L", 13], ["Fanta Uva 2L", 13], ["Fanta Guaraná 2L", 13],
     ["Coca-Cola 2L", 16], ["Sprite 2L", 13], ["Sprite Zero 2L", 13],
     ["Água", 4], ["Água com gás", 4], ["Cerveja", 8],
-  ].map(([name, price]) => ({ category: "bebidas", name: String(name), price: Number(price), description: "Geladinho para acompanhar" })),
+  ].map(([name, price]) => {
+    const beverageName = String(name);
+    const group = beverageName.startsWith("Suco Tial") ? "Sucos Tial"
+      : beverageName.startsWith("Suco Del Valle") ? "Sucos Del Valle"
+      : beverageName.includes("Mini 200ml") ? "Refrigerantes Mini 200 ml"
+      : beverageName.includes("350ml") ? "Refrigerantes 350 ml"
+      : beverageName.includes("600ml") ? "Refrigerantes 600 ml"
+      : beverageName.includes("1L") ? "Refrigerantes 1 litro"
+      : beverageName.includes("2L") ? "Refrigerantes 2 litros"
+      : "Outras bebidas";
+    return { category: "bebidas", name: beverageName, price: Number(price), description: "Geladinho para acompanhar", group };
+  }),
 ];
 
 const money = (value: number) =>
@@ -402,6 +419,20 @@ export default function Home() {
     ? `Resultados para “${search}”`
     : categories.find((category) => category.id === active)?.label;
 
+  const renderProductCard = (product: Product) => (
+    <article className="product-card" key={`${product.category}-${product.name}`}>
+      <div>
+        {product.badge && <span className="product-badge">{product.badge}</span>}
+        <h4>{product.name}</h4>
+        <p>{product.description}</p>
+      </div>
+      <div className="product-footer">
+        <strong>{money(product.price)}</strong>
+        <button onClick={() => startAdd(product)} aria-label={`Adicionar ${product.name} à sacola`}>+</button>
+      </div>
+    </article>
+  );
+
   return (
     <main>
       <header className="topbar">
@@ -478,21 +509,22 @@ export default function Home() {
           <span>{visible.length} {visible.length === 1 ? "item" : "itens"}</span>
         </div>
 
-        <div className="product-grid">
-          {visible.map((product) => (
-            <article className="product-card" key={`${product.category}-${product.name}`}>
-              <div>
-                {product.badge && <span className="product-badge">{product.badge}</span>}
-                <h4>{product.name}</h4>
-                <p>{product.description}</p>
-              </div>
-              <div className="product-footer">
-                <strong>{money(product.price)}</strong>
-                <button onClick={() => startAdd(product)} aria-label={`Adicionar ${product.name} à sacola`}>+</button>
-              </div>
-            </article>
-          ))}
-        </div>
+        {active === "bebidas" && !search ? (
+          <div className="beverage-sections">
+            {beverageGroupOrder.map((group) => {
+              const groupProducts = visible.filter((product) => product.group === group);
+              if (!groupProducts.length) return null;
+              return (
+                <section className="beverage-section" key={group}>
+                  <div className="beverage-group-heading"><h4>{group}</h4><span>{groupProducts.length} opções</span></div>
+                  <div className="product-grid">{groupProducts.map(renderProductCard)}</div>
+                </section>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="product-grid">{visible.map(renderProductCard)}</div>
+        )}
       </section>
 
       <footer>
