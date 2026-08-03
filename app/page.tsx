@@ -15,13 +15,13 @@ type CartItem = Product & { id: string; quantity: number; addOns: AddOn[] };
 
 const categories = [
   { id: "padrao", label: "Tradicionais" },
+  { id: "bebidas", label: "Bebidas" },
   { id: "frango", label: "Frango" },
   { id: "artesanal", label: "Artesanais" },
   { id: "lombo", label: "Lombo" },
   { id: "especiais", label: "Especiais" },
   { id: "batatas", label: "Batata frita" },
   { id: "adicionais", label: "Adicionais" },
-  { id: "bebidas", label: "Bebidas" },
 ];
 
 const lavrasNeighborhoods = [
