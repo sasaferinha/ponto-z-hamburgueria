@@ -60,11 +60,11 @@ a { color: inherit; text-decoration: none; }
 }
 .hero-photo img { width: 190%; max-width: none; height: 100%; display: block; object-fit: cover; transform: translateX(-47%); }
 
-.store-strip { display: grid; grid-template-columns: .8fr .9fr 1.3fr; margin: -1px 5vw 0; padding: 36px 0; background: var(--paper); border-bottom: 1px solid var(--line); }
-.store-strip > div { min-width: 0; padding: 8px 32px; display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: center; column-gap: 14px; border-right: 1px solid var(--line); }
+.store-strip { display: grid; grid-template-columns: .8fr .9fr 1.3fr; margin: -1px 5vw 0; padding: 25px 0; background: var(--paper); border-bottom: 1px solid var(--line); }
+.store-strip > div { min-width: 0; padding: 2px 26px; display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: center; column-gap: 10px; border-right: 1px solid var(--line); }
 .store-strip > div:last-child { border: 0; }
-.store-strip b { font-size: 42px; line-height: 1.08; overflow-wrap: anywhere; }
-.store-strip small { color: #756b61; font-size: 36px; line-height: 1.18; margin-top: 12px; grid-column: 2; overflow-wrap: anywhere; }
+.store-strip b { font-size: 14px; line-height: 1.2; overflow-wrap: anywhere; }
+.store-strip small { color: #756b61; font-size: 12px; line-height: 1.4; margin-top: 5px; grid-column: 2; overflow-wrap: anywhere; }
 .status-dot { width: 9px; height: 9px; border-radius: 50%; background: #31a65a; margin-top: 4px; box-shadow: 0 0 0 4px #dbf2e3; }
 .store-closed .status-dot { background: #c63d2f; box-shadow: 0 0 0 4px #f4d8d4; }
 
@@ -292,7 +292,6 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
   .hero-art { min-height: 250px; }
   .hero-photo { width: min(260px, 68vw); }
   .store-strip > div:nth-child(2) b, .store-strip > div:nth-child(2) small { grid-column: 1 / -1; }
-  .store-strip > div:nth-child(2) b { font-size: 26px; line-height: 1.15; }
   .menu-shell { padding: 65px 15px 100px; }
   .menu-heading { align-items: stretch; flex-direction: column; gap: 22px; }
   .search { width: 100%; }
