@@ -117,7 +117,6 @@ export default function AdminPage() {
     const productItems = items.filter((item) => item.name !== "Taxa de entrega");
     const popup = window.open("", "_blank", "width=420,height=720");
     if (!popup) return;
-    if (order.status === "novo") void updateStatus(order.id, "preparo");
     const rows = productItems.map((item) => `<div class="item"><b>${item.quantity}x ${item.name}</b><span>${money(Math.round(item.price * item.quantity * 100))}</span></div>${item.addOns.map((a) => `<small>+ ${a.name} — ${money(Math.round(a.price * 100))}${item.quantity > 1 ? " cada" : ""}</small>`).join("")}`).join("");
     const fulfillmentDetails = order.orderMode === "entrega"
       ? `<br><b>Endereço:</b> ${order.street}, ${order.addressDetails || "s/n"} - ${order.neighborhood}<br><b>Taxa de entrega:</b> ${deliveryItem ? money(Math.round(deliveryItem.price * 100)) : "A confirmar"}<br><b>Tempo estimado:</b> ${storeSettings.deliveryTime}`
@@ -158,9 +157,8 @@ export default function AdminPage() {
         { title: "Já visualizados", subtitle: "Pedidos conferidos", orders: seenOrders, kind: "seen" },
       ];
   const activeCount = orders.filter((order) => !["finalizado", "cancelado"].includes(order.status)).length;
-  const workflowGroups: { title: string; subtitle: string; orders: Order[]; kind: "new" | "preparing" | "finished" }[] = [
-    { title: "Novos", subtitle: "Pedidos aguardando impress\u00e3o", orders: orders.filter((order) => order.status === "novo"), kind: "new" },
-    { title: "Em preparo", subtitle: "Pedidos que est\u00e3o sendo preparados", orders: orders.filter((order) => ["preparo", "pronto"].includes(order.status)), kind: "preparing" },
+  const workflowGroups: { title: string; subtitle: string; orders: Order[]; kind: "new" | "finished" }[] = [
+    { title: "Novos", subtitle: "Pedidos atuais", orders: orders.filter((order) => ["novo", "preparo", "pronto"].includes(order.status)), kind: "new" },
     { title: "Finalizados", subtitle: "Pedidos conclu\u00eddos", orders: orders.filter((order) => ["finalizado", "cancelado"].includes(order.status)), kind: "finished" },
   ];
   return (
@@ -200,8 +198,8 @@ export default function AdminPage() {
             <div className="order-address"><b>{order.orderMode === "entrega" ? "Entrega" : "Retirada no balcão"}</b>{order.orderMode === "entrega" && <span>{order.street}, {order.addressDetails || "s/n"}<br />{order.neighborhood}</span>}</div>
             <div className="order-total"><span>Total do pedido</span><b>{money(order.total)}</b></div>
             <label className="status-select"><span>Situação</span><select value={order.status} onChange={(event) => void updateStatus(order.id, event.target.value)}>{Object.entries(statusLabels).map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-            {group.kind === "preparing" && <button className="finish-order" onClick={() => void updateStatus(order.id, "finalizado")}>Finalizar pedido</button>}
-            <button className="print-order" onClick={() => printOrder(order)}>{group.kind === "new" && order.customerPhone ? "Imprimir e avisar cliente" : "Reimprimir comanda"}</button>
+            {group.kind === "new" && <button className="finish-order" onClick={() => void updateStatus(order.id, "finalizado")}>Finalizar pedido</button>}
+            <button className="print-order" onClick={() => printOrder(order)}>{order.status === "novo" && order.customerPhone ? "Imprimir e avisar cliente" : "Reimprimir comanda"}</button>
           </article>
         ); })}</div>}
           </div>
