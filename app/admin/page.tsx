@@ -185,7 +185,7 @@ export default function AdminPage() {
       </nav>
       {error && <p className="admin-error">{error}</p>}
       {visible.length === 0 && <div className="admin-empty"><b>Nenhum pedido nesta etapa</b><span>Os novos pedidos aparecerão aqui automaticamente.</span></div>}
-      {workflowGroups.map((group) => { const isCollapsed = collapsedGroups.has(group.title); return (
+      {workflowGroups.filter((group) => group.orders.length > 0).map((group) => { const isCollapsed = collapsedGroups.has(group.title); return (
         <section className={`admin-orders-group ${group.kind}${isCollapsed ? " collapsed" : ""}`} key={group.title}>
           <button className="orders-group-heading" type="button" onClick={() => toggleGroup(group.title)} aria-expanded={!isCollapsed} aria-controls={`orders-${group.title.replace(/[^a-zA-Z0-9]/g, "-")}`}>
             <div><span>{group.subtitle}</span><h2>{group.title}</h2></div>
