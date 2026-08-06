@@ -163,6 +163,7 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 .order-mode button b { font-size: 13px; }
 .order-mode button small { color: #81776d; font-size: 10px; margin: 2px 0 0; }
 .order-mode button.selected { border-color: var(--orange); background: #fff4ed; box-shadow: inset 0 0 0 1px var(--orange); }
+.order-mode button:last-child { grid-column: 1 / -1; }
 .payment-fieldset { border: 0; padding: 0; margin: 20px 0 0; }
 .payment-fieldset legend { color: #5f564e; font-weight: 800; font-size: 12px; margin-bottom: 9px; }
 .payment-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

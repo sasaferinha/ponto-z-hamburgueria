@@ -707,9 +707,9 @@ export default function Home() {
                       className={orderMode === "local" ? "selected" : ""}
                       onClick={() => setOrderMode("local")}
                     >
-                      <span className="mode-mark">L</span>
-                      <b>Comer aqui</b>
-                      <small>No estabelecimento</small>
+                      <span className="mode-mark">M</span>
+                      <b>Comer no estabelecimento</b>
+                      <small>Fazer a refeição no local</small>
                     </button>
                   </div>
                   {orderMode === "entrega" && (
