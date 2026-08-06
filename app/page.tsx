@@ -252,7 +252,7 @@ export default function Home() {
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [orderMode, setOrderMode] = useState<"entrega" | "retirada">("entrega");
+  const [orderMode, setOrderMode] = useState<"entrega" | "retirada" | "local">("entrega");
   const [neighborhood, setNeighborhood] = useState("");
   const [street, setStreet] = useState("");
   const [addressDetails, setAddressDetails] = useState("");
@@ -261,7 +261,7 @@ export default function Home() {
   const [cashAmount, setCashAmount] = useState("");
   const [sendingOrder, setSendingOrder] = useState(false);
   const [orderError, setOrderError] = useState("");
-  const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos", pickupTime: "20 a 30 minutos" });
+  const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos", pickupTime: "20 a 30 minutos", openingHours: "18h às 00h" });
 
   useEffect(() => {
     fetch("/api/settings", { cache: "no-store" })
@@ -290,10 +290,10 @@ export default function Home() {
     const normalized = cashAmount.trim().replace(/[^\d.,]/g, "");
     return Number(normalized.includes(",") ? normalized.replace(/\./g, "").replace(",", ".") : normalized);
   })();
-  const cashChangeMissing = paymentMethod === "Dinheiro" && !cashChangeChoice;
+  const cashChangeMissing = orderMode !== "local" && paymentMethod === "Dinheiro" && !cashChangeChoice;
   const customerPhoneDigits = customerPhone.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
   const customerPhoneInvalid = !/^\d{10,11}$/.test(customerPhoneDigits);
-  const cashAmountInvalid = paymentMethod === "Dinheiro" && cashChangeChoice === "yes" &&
+  const cashAmountInvalid = orderMode !== "local" && paymentMethod === "Dinheiro" && cashChangeChoice === "yes" &&
     (!cashAmount.trim() || !Number.isFinite(cashAmountValue) || cashAmountValue < orderTotal);
   const currentAddOns = customizing?.category === "batatas" ? friesAddOns : addOns;
 
@@ -377,12 +377,12 @@ export default function Home() {
       `Nome: ${customerName.trim()}`,
       orderMode === "entrega"
         ? `Entrega em: ${street.trim()}, ${addressDetails.trim() || "sem número informado"} - Bairro ${neighborhood.trim()}`
-        : "Forma de recebimento: Retirada no balcão",
+        : orderMode === "local" ? "Forma de recebimento: Comer no estabelecimento" : "Forma de recebimento: Retirada no balcão",
       orderMode === "entrega"
         ? `Tempo estimado de entrega: ${storeSettings.deliveryTime}`
-        : `Tempo estimado de retirada: ${storeSettings.pickupTime}`,
-      `Forma de pagamento: ${paymentMethod}`,
-      ...(paymentMethod === "Dinheiro"
+        : orderMode === "retirada" ? `Tempo estimado de retirada: ${storeSettings.pickupTime}` : "",
+      ...(orderMode === "local" ? [] : [`Forma de pagamento: ${paymentMethod}`]),
+      ...(orderMode !== "local" && paymentMethod === "Dinheiro"
         ? [cashChangeChoice === "yes" ? `Troco para: ${money(cashAmountValue)}` : "Troco: não precisa"]
         : []),
     ].join("\n");
@@ -476,7 +476,7 @@ export default function Home() {
       </section>
 
       <section className="store-strip">
-        <div className={storeSettings.isOpen ? "store-open" : "store-closed"}><span className="status-dot" /><b>{storeSettings.isOpen ? "Aberto agora" : "Fechado no momento"}</b><small>Funcionamento: 18h às 00h</small></div>
+        <div className={storeSettings.isOpen ? "store-open" : "store-closed"}><span className="status-dot" /><b>{storeSettings.isOpen ? "Aberto agora" : "Fechado no momento"}</b><small>Funcionamento: {storeSettings.openingHours}</small></div>
         <div><b>Delivery e retirada</b><small>{storeSettings.isOpen ? `Entrega: ${storeSettings.deliveryTime} · Retirada: ${storeSettings.pickupTime}` : "Novos pedidos temporariamente pausados"}</small></div>
         <div><b>Rua Evaristo Gomes Guerra, 509</b><small>Jardim Glória · Lavras/MG</small></div>
       </section>
@@ -703,6 +703,14 @@ export default function Home() {
                       <b>Retirada</b>
                       <small>Buscar no balcão</small>
                     </button>
+                    <button
+                      className={orderMode === "local" ? "selected" : ""}
+                      onClick={() => setOrderMode("local")}
+                    >
+                      <span className="mode-mark">L</span>
+                      <b>Comer aqui</b>
+                      <small>No estabelecimento</small>
+                    </button>
                   </div>
                   {orderMode === "entrega" && (
                     <div className="address-fields">
@@ -746,7 +754,7 @@ export default function Home() {
                       </p>
                     </div>
                   )}
-                  <fieldset className="payment-fieldset">
+                  {orderMode !== "local" && <fieldset className="payment-fieldset">
                     <legend>Forma de pagamento</legend>
                     <div className="payment-mode" role="radiogroup" aria-label="Forma de pagamento">
                       {["Pix", "Dinheiro", "Cartão de crédito", "Cartão de débito"].map((method) => (
@@ -800,7 +808,7 @@ export default function Home() {
                         )}
                       </div>
                     )}
-                  </fieldset>
+                  </fieldset>}
                 </section>
                 <div className="order-summary">
                   <div><span>Subtotal dos itens</span><b>{money(total)}</b></div>
@@ -812,7 +820,7 @@ export default function Home() {
                 <small>
                   {orderMode === "entrega"
                     ? deliveryFee !== undefined ? "A taxa de entrega já está incluída no total." : "A taxa para este local será confirmada no WhatsApp."
-                    : `Retirada estimada em ${storeSettings.pickupTime}.`}
+                    : orderMode === "retirada" ? `Retirada estimada em ${storeSettings.pickupTime}.` : "Você poderá comer no estabelecimento quando o pedido ficar pronto."}
                 </small>
                 <button
                   className="whatsapp-order"
@@ -822,7 +830,7 @@ export default function Home() {
                     !storeSettings.isOpen ||
                     !customerName.trim() ||
                     customerPhoneInvalid ||
-                    !paymentMethod ||
+                    (orderMode !== "local" && !paymentMethod) ||
                     cashChangeMissing ||
                     cashAmountInvalid ||
                     (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))
@@ -831,7 +839,7 @@ export default function Home() {
                   {!storeSettings.isOpen ? "Hamburgueria fechada" : sendingOrder ? "Registrando pedido..." : "Enviar pedido no WhatsApp"} <span>↗</span>
                 </button>
                 {orderError && <p className="form-error" role="alert">{orderError}</p>}
-                {(!customerName.trim() || customerPhoneInvalid || !paymentMethod || cashChangeMissing || cashAmountInvalid ||
+                {(!customerName.trim() || customerPhoneInvalid || (orderMode !== "local" && !paymentMethod) || cashChangeMissing || cashAmountInvalid ||
                   (orderMode === "entrega" && (!neighborhood.trim() || !street.trim()))) && (
                   <p className="form-hint">
                     {customerPhoneInvalid
@@ -840,7 +848,7 @@ export default function Home() {
                       ? "Escolha se precisa ou não de troco."
                       : cashAmountInvalid
                       ? `O valor para troco precisa ser igual ou maior que ${money(orderTotal)}.`
-                      : `Preencha seu nome e WhatsApp${orderMode === "entrega" ? ", bairro e rua" : ""} e selecione a forma de pagamento para continuar.`}
+                      : `Preencha seu nome e WhatsApp${orderMode === "entrega" ? ", bairro e rua" : ""}${orderMode !== "local" ? " e selecione a forma de pagamento" : ""} para continuar.`}
                   </p>
                 )}
               </div>

@@ -33,7 +33,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("nao-visualizados");
-  const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos", pickupTime: "20 a 30 minutos" });
+  const [storeSettings, setStoreSettings] = useState({ isOpen: true, deliveryTime: "40 a 60 minutos", pickupTime: "20 a 30 minutos", openingHours: "18h às 00h" });
   const [savingSettings, setSavingSettings] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set());
@@ -87,13 +87,26 @@ export default function AdminPage() {
   };
 
   const updateStatus = async (id: number, status: string) => {
-    const previous = orders.find((order) => order.id === id)?.status;
+    const selectedOrder = orders.find((order) => order.id === id);
+    const previous = selectedOrder?.status;
+    const whatsappWindow = status === "finalizado" && selectedOrder?.customerPhone ? window.open("about:blank", "_blank") : null;
     setOrders((current) => current.map((order) => order.id === id ? { ...order, status } : order));
     try {
       const response = await fetch(`/api/orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
       if (!response.ok) throw new Error("Falha ao atualizar");
+      if (whatsappWindow && selectedOrder) {
+        const digits = selectedOrder.customerPhone.replace(/\D/g, "");
+        const whatsappPhone = digits.startsWith("55") && /^\d{12,13}$/.test(digits) ? digits : `55${digits}`;
+        const message = selectedOrder.orderMode === "entrega"
+          ? `Olá, ${selectedOrder.customerName}! Seu pedido #${selectedOrder.id} já saiu para entrega e está a caminho.`
+          : selectedOrder.orderMode === "local"
+            ? `Olá, ${selectedOrder.customerName}! Seu pedido #${selectedOrder.id} está finalizado. Você já pode vir comer aqui no estabelecimento!`
+            : `Olá, ${selectedOrder.customerName}! Seu pedido #${selectedOrder.id} está finalizado. Você já pode vir buscá-lo no estabelecimento!`;
+        whatsappWindow.location.href = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
+      }
       setError("");
     } catch {
+      whatsappWindow?.close();
       if (previous) setOrders((current) => current.map((order) => order.id === id ? { ...order, status: previous } : order));
       setError("Não foi possível alterar a situação. Tente novamente.");
     }
@@ -120,9 +133,9 @@ export default function AdminPage() {
     const rows = productItems.map((item) => `<div class="item"><b>${item.quantity}x ${item.name}</b><span>${money(Math.round(item.price * item.quantity * 100))}</span></div>${item.addOns.map((a) => `<small>+ ${a.name} — ${money(Math.round(a.price * 100))}${item.quantity > 1 ? " cada" : ""}</small>`).join("")}`).join("");
     const fulfillmentDetails = order.orderMode === "entrega"
       ? `<br><b>Endereço:</b> ${order.street}, ${order.addressDetails || "s/n"} - ${order.neighborhood}<br><b>Taxa de entrega:</b> ${deliveryItem ? money(Math.round(deliveryItem.price * 100)) : "A confirmar"}<br><b>Tempo estimado:</b> ${storeSettings.deliveryTime}`
-      : `<br><b>Tempo estimado para retirada:</b> ${storeSettings.pickupTime}`;
-    const paymentDetails = `<br><b>Forma de pagamento:</b> ${order.paymentMethod || "N\u00e3o informado"}${order.paymentMethod === "Dinheiro" ? order.cashChangeChoice === "yes" && order.cashAmountCents ? `<br><b>Troco para:</b> ${money(order.cashAmountCents)}` : `<br><b>Troco:</b> N\u00e3o precisa` : ""}`;
-    popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido #${order.id}</title><style>body{font:14px Arial;max-width:320px;margin:20px auto;color:#111}.head{text-align:center;border-bottom:2px dashed #111;padding-bottom:12px}.item{display:flex;justify-content:space-between;margin-top:12px;gap:12px}small{display:block;margin:3px 0 0 14px}.info{border-top:2px dashed #111;margin-top:15px;padding-top:12px;line-height:1.7}.total{display:flex;justify-content:space-between;font-size:18px;border-top:2px solid #111;margin-top:15px;padding-top:10px}@media print{body{margin:0}}</style></head><body><div class="head"><b>PONTO Z HAMBURGUERIA</b><h2>Pedido #${order.id}</h2><span>${new Date(order.createdAt + "Z").toLocaleString("pt-BR")}</span></div>${rows}<div class="info"><b>Cliente:</b> ${order.customerName}${order.customerPhone ? `<br><b>WhatsApp:</b> ${order.customerPhone}` : ""}<br><b>Recebimento:</b> ${order.orderMode === "entrega" ? "Entrega" : "Retirada"}${fulfillmentDetails}${paymentDetails}</div><div class="total"><b>Total</b><b>${money(order.total)}</b></div><script>window.onload=()=>window.print()<\/script></body></html>`);
+      : order.orderMode === "local" ? "" : `<br><b>Tempo estimado para retirada:</b> ${storeSettings.pickupTime}`;
+    const paymentDetails = order.orderMode === "local" ? "" : `<br><b>Forma de pagamento:</b> ${order.paymentMethod || "N\u00e3o informado"}${order.paymentMethod === "Dinheiro" ? order.cashChangeChoice === "yes" && order.cashAmountCents ? `<br><b>Troco para:</b> ${money(order.cashAmountCents)}` : `<br><b>Troco:</b> N\u00e3o precisa` : ""}`;
+    popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido #${order.id}</title><style>body{font:14px Arial;max-width:320px;margin:20px auto;color:#111}.head{text-align:center;border-bottom:2px dashed #111;padding-bottom:12px}.item{display:flex;justify-content:space-between;margin-top:12px;gap:12px}small{display:block;margin:3px 0 0 14px}.info{border-top:2px dashed #111;margin-top:15px;padding-top:12px;line-height:1.7}.total{display:flex;justify-content:space-between;font-size:18px;border-top:2px solid #111;margin-top:15px;padding-top:10px}@media print{body{margin:0}}</style></head><body><div class="head"><b>PONTO Z HAMBURGUERIA</b><h2>Pedido #${order.id}</h2><span>${new Date(order.createdAt + "Z").toLocaleString("pt-BR")}</span></div>${rows}<div class="info"><b>Cliente:</b> ${order.customerName}${order.customerPhone ? `<br><b>WhatsApp:</b> ${order.customerPhone}` : ""}<br><b>Recebimento:</b> ${order.orderMode === "entrega" ? "Entrega" : order.orderMode === "local" ? "Comer no estabelecimento" : "Retirada"}${fulfillmentDetails}${paymentDetails}</div><div class="total"><b>Total</b><b>${money(order.total)}</b></div><script>window.onload=()=>window.print()<\/script></body></html>`);
     popup.document.close();
     if (order.status === "novo" && order.customerPhone) {
       const digits = order.customerPhone.replace(/\D/g, "");
@@ -172,7 +185,8 @@ export default function AdminPage() {
         </div>
         <label><span>Tempo estimado de entrega</span><input value={storeSettings.deliveryTime} onChange={(event) => setStoreSettings((current) => ({ ...current, deliveryTime: event.target.value }))} placeholder="Ex.: 40 a 60 minutos" maxLength={60} /></label>
         <label><span>Tempo estimado de retirada</span><input value={storeSettings.pickupTime} onChange={(event) => setStoreSettings((current) => ({ ...current, pickupTime: event.target.value }))} placeholder="Ex.: 20 a 30 minutos" maxLength={60} /></label>
-        <button className="save-store-settings" onClick={() => void saveSettings()} disabled={savingSettings || !storeSettings.deliveryTime.trim() || !storeSettings.pickupTime.trim()}>{savingSettings ? "Salvando..." : "Salvar funcionamento"}</button>
+        <label><span>Horário de funcionamento</span><input value={storeSettings.openingHours} onChange={(event) => setStoreSettings((current) => ({ ...current, openingHours: event.target.value }))} placeholder="Ex.: Terça a domingo, 18h às 00h" maxLength={80} /></label>
+        <button className="save-store-settings" onClick={() => void saveSettings()} disabled={savingSettings || !storeSettings.deliveryTime.trim() || !storeSettings.pickupTime.trim() || !storeSettings.openingHours.trim()}>{savingSettings ? "Salvando..." : "Salvar funcionamento"}</button>
       </section>
       <nav className="admin-filters" aria-label="Filtrar pedidos">
         {[
@@ -195,7 +209,7 @@ export default function AdminPage() {
           <article className={`order-card status-${order.status} ${order.viewed ? "viewed" : "not-viewed"}`} key={order.id} onClick={() => { if (!order.viewed) void updateViewed(order.id, true); }}>
             <div className="order-head"><div><span>Pedido #{order.id}</span><h2>{order.customerName}</h2></div><time>{new Date(order.createdAt + "Z").toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</time></div>
             <div className="order-items">{items.map((item, index) => <div key={`${item.name}-${index}`}><p><b>{item.quantity}x</b> {item.name}</p>{item.addOns.map((addOn) => <small key={addOn.name}>+ {addOn.name} — {money(Math.round(addOn.price * 100))}{item.quantity > 1 ? " cada" : ""}</small>)}</div>)}</div>
-            <div className="order-address"><b>{order.orderMode === "entrega" ? "Entrega" : "Retirada no balcão"}</b>{order.orderMode === "entrega" && <span>{order.street}, {order.addressDetails || "s/n"}<br />{order.neighborhood}</span>}</div>
+            <div className="order-address"><b>{order.orderMode === "entrega" ? "Entrega" : order.orderMode === "local" ? "Comer no estabelecimento" : "Retirada no balcão"}</b>{order.orderMode === "entrega" && <span>{order.street}, {order.addressDetails || "s/n"}<br />{order.neighborhood}</span>}</div>
             <div className="order-total"><span>Total do pedido</span><b>{money(order.total)}</b></div>
             <label className="status-select"><span>Situação</span><select value={order.status} onChange={(event) => void updateStatus(order.id, event.target.value)}>{Object.entries(statusLabels).map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
             {group.kind === "new" && <button className="finish-order" onClick={() => void updateStatus(order.id, "finalizado")}>Finalizar pedido</button>}

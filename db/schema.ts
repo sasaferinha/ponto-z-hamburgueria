@@ -25,5 +25,6 @@ export const storeSettings = sqliteTable("store_settings", {
   isOpen: integer("is_open", { mode: "boolean" }).notNull().default(true),
   deliveryTime: text("delivery_time").notNull().default("40 a 60 minutos"),
   pickupTime: text("pickup_time").notNull().default("20 a 30 minutos"),
+  openingHours: text("opening_hours").notNull().default("18h às 00h"),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });

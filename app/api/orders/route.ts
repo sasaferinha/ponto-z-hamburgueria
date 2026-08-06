@@ -12,17 +12,17 @@ export async function POST(request: Request) {
   };
   const customerPhone = (data.customerPhone ?? "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
   if (!data.customerName?.trim() || !/^\d{10,11}$/.test(customerPhone) ||
-      !["entrega", "retirada"].includes(data.orderMode ?? "") || !data.items?.length) {
+      !["entrega", "retirada", "local"].includes(data.orderMode ?? "") || !data.items?.length) {
     return Response.json({ error: "Pedido incompleto" }, { status: 400 });
   }
   if (data.orderMode === "entrega" && (!data.neighborhood?.trim() || !data.street?.trim())) {
     return Response.json({ error: "Endereço incompleto" }, { status: 400 });
   }
   const paymentMethods = ["Dinheiro", "Pix", "Cart\u00e3o de cr\u00e9dito", "Cart\u00e3o de d\u00e9bito"];
-  if (!paymentMethods.includes(data.paymentMethod ?? "")) {
+  if (data.orderMode !== "local" && !paymentMethods.includes(data.paymentMethod ?? "")) {
     return Response.json({ error: "Forma de pagamento invÃ¡lida" }, { status: 400 });
   }
-  if (data.paymentMethod === "Dinheiro" && !["yes", "no"].includes(data.cashChangeChoice ?? "")) {
+  if (data.orderMode !== "local" && data.paymentMethod === "Dinheiro" && !["yes", "no"].includes(data.cashChangeChoice ?? "")) {
     return Response.json({ error: "Informe se precisa de troco" }, { status: 400 });
   }
   const calculatedTotal = data.items.reduce((sum, item) =>
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   if (Math.abs(calculatedTotal - Number(data.total)) > 0.01) {
     return Response.json({ error: "Total inválido" }, { status: 400 });
   }
-  if (data.paymentMethod === "Dinheiro" && data.cashChangeChoice === "yes" &&
+  if (data.orderMode !== "local" && data.paymentMethod === "Dinheiro" && data.cashChangeChoice === "yes" &&
       (!Number.isFinite(Number(data.cashAmount)) || Number(data.cashAmount) < calculatedTotal)) {
     return Response.json({ error: "Valor para troco inv\u00e1lido" }, { status: 400 });
   }
@@ -39,9 +39,9 @@ export async function POST(request: Request) {
   const [order] = await getDb().insert(orders).values({
     customerName: data.customerName.trim(), customerPhone, orderMode: data.orderMode!,
     neighborhood: data.neighborhood?.trim() ?? "", street: data.street?.trim() ?? "",
-    addressDetails: data.addressDetails?.trim() ?? "", paymentMethod: data.paymentMethod!,
-    cashChangeChoice: data.paymentMethod === "Dinheiro" ? data.cashChangeChoice! : "",
-    cashAmountCents: data.paymentMethod === "Dinheiro" && data.cashChangeChoice === "yes"
+    addressDetails: data.addressDetails?.trim() ?? "", paymentMethod: data.orderMode === "local" ? "" : data.paymentMethod!,
+    cashChangeChoice: data.orderMode !== "local" && data.paymentMethod === "Dinheiro" ? data.cashChangeChoice! : "",
+    cashAmountCents: data.orderMode !== "local" && data.paymentMethod === "Dinheiro" && data.cashChangeChoice === "yes"
       ? Math.round(Number(data.cashAmount) * 100) : null,
     itemsJson: JSON.stringify(data.items),
     total: Math.round(calculatedTotal * 100),
