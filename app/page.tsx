@@ -22,6 +22,7 @@ const categories = [
   { id: "lombo", label: "Lombo" },
   { id: "especiais", label: "Especiais" },
   { id: "batatas", label: "Batata frita" },
+  { id: "molhos", label: "Molhos artesanais" },
   { id: "adicionais", label: "Adicionais" },
 ];
 
@@ -188,10 +189,14 @@ const products: Product[] = [
   { category: "batatas", name: "Batata frita grande", price: 25, description: "Porção de 500g acompanhada de dois molhos da casa", badge: "500g" },
   { category: "batatas", name: "Batata com cheddar e bacon", price: 35, description: "Porção de 500g com cheddar e bacon, acompanhada de dois molhos da casa", badge: "Especial" },
 
+  { category: "molhos", name: "Maionese de cebola e salsa", price: 2.5, description: "Molho artesanal da casa", badge: "Artesanal" },
+  { category: "molhos", name: "Maionese branca de alho", price: 2.5, description: "Molho artesanal da casa", badge: "Artesanal" },
+
   ...[
     ["Bacon", 10], ["Calabresa", 8], ["Catupiry", 6], ["Cebola", 2], ["Cheddar", 7],
     ["Frango", 10], ["Hambúrguer", 8], ["Hambúrguer Artesanal", 12], ["Lombo", 8],
     ["Milho", 3], ["Muçarela", 3], ["Ovo", 3], ["Presunto", 3],
+    ["Maionese de cebola e salsa", 2.5], ["Maionese branca de alho", 2.5],
   ].map(([name, price]) => ({ category: "adicionais", name: String(name), price: Number(price), description: "Adicione ao seu lanche preferido" })),
 
   ...[
