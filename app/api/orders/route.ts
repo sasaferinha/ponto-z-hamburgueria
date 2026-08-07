@@ -1,14 +1,14 @@
 import { desc } from "drizzle-orm";
 import { proxyDataRequest, usesRemoteData } from "../data-proxy";
 
-type OrderItem = { name: string; quantity: number; price: number; addOns: { name: string; price: number }[] };
+type OrderItem = { name: string; quantity: number; price: number; addOns: { name: string; price: number }[]; observation?: string };
 
 export async function POST(request: Request) {
   if (usesRemoteData()) return proxyDataRequest(request, "/api/orders");
   const data = (await request.json()) as {
     customerName?: string; customerPhone?: string; orderMode?: string; neighborhood?: string; street?: string;
     addressDetails?: string; paymentMethod?: string; cashChangeChoice?: string;
-    cashAmount?: number; items?: OrderItem[]; total?: number;
+    cashAmount?: number; orderObservation?: string; items?: OrderItem[]; total?: number;
   };
   const customerPhone = (data.customerPhone ?? "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
   if (!data.customerName?.trim() || !/^\d{10,11}$/.test(customerPhone) ||
@@ -25,7 +25,8 @@ export async function POST(request: Request) {
   if (data.orderMode !== "local" && data.paymentMethod === "Dinheiro" && !["yes", "no"].includes(data.cashChangeChoice ?? "")) {
     return Response.json({ error: "Informe se precisa de troco" }, { status: 400 });
   }
-  const calculatedTotal = data.items.reduce((sum, item) =>
+  const sanitizedItems = data.items.map((item) => ({ ...item, observation: (item.observation ?? "").trim().slice(0, 200) }));
+  const calculatedTotal = sanitizedItems.reduce((sum, item) =>
     sum + (item.price + item.addOns.reduce((extra, addOn) => extra + addOn.price, 0)) * item.quantity, 0);
   if (Math.abs(calculatedTotal - Number(data.total)) > 0.01) {
     return Response.json({ error: "Total inválido" }, { status: 400 });
@@ -43,7 +44,8 @@ export async function POST(request: Request) {
     cashChangeChoice: data.orderMode !== "local" && data.paymentMethod === "Dinheiro" ? data.cashChangeChoice! : "",
     cashAmountCents: data.orderMode !== "local" && data.paymentMethod === "Dinheiro" && data.cashChangeChoice === "yes"
       ? Math.round(Number(data.cashAmount) * 100) : null,
-    itemsJson: JSON.stringify(data.items),
+    orderObservation: (data.orderObservation ?? "").trim().slice(0, 300),
+    itemsJson: JSON.stringify(sanitizedItems),
     total: Math.round(calculatedTotal * 100),
   }).returning();
   return Response.json({ order }, { status: 201 });

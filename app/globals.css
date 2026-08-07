@@ -249,6 +249,11 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 .print-order { width: 100%; margin-top: 9px; border: 1px solid #c8b8ab; border-radius: 9px; padding: 11px; background: transparent; color: #372a22; font-weight: 900; cursor: pointer; }
 .finish-order { width: 100%; border: 0; border-radius: 9px; padding: 13px; background: #2f9256; color: white; font-size: 15px; font-weight: 900; cursor: pointer; }
 .finish-order:hover { background: #267b48; }
+.cancel-order { width: 100%; margin-top: 9px; border: 1px solid #c94b3f; border-radius: 9px; padding: 12px; background: #fff7f6; color: #a62f25; font-size: 14px; font-weight: 900; cursor: pointer; }
+.cancel-order:hover { background: #fce4e1; }
+.admin-observation { color: #59483d !important; background: #f4eee9; border-radius: 6px; padding: 7px 9px; margin: 7px 0 0 !important; }
+.order-observation { display: grid; gap: 4px; margin-bottom: 12px; padding: 11px; border-radius: 9px; background: #fff3d6; color: #44362c; }
+.order-observation span { line-height: 1.4; }
 .admin-empty { display: none; }
 .admin-empty { grid-column: 1 / -1; min-height: 240px; display: grid; place-content: center; gap: 8px; text-align: center; color: #6d635c; }.admin-empty b { color: #2c2520; font-size: 20px; }
 
@@ -265,6 +270,10 @@ footer a { color: var(--gold); font-weight: 800; font-size: 16px; }
 .addon-list > button > span:last-child { display: grid; gap: 3px; }
 .addon-list small { color: #756b61; font-size: 11px; }
 .customizer-total { display: flex; justify-content: space-between; align-items: center; padding: 17px 0; border-top: 1px solid var(--line); font-size: 17px; }
+.item-observation { display: grid; gap: 8px; margin-top: 18px; font-weight: 800; font-size: 13px; }
+.item-observation textarea { width: 100%; resize: vertical; border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--surface); color: var(--ink); font: inherit; font-weight: 400; }
+.item-observation textarea:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px #fff0e8; }
+.cart-observation { display: block; margin-top: 7px; color: #66594f; line-height: 1.4; }
 .confirm-customization { width: 100%; border: 0; border-radius: 12px; padding: 16px; background: var(--orange); color: white; font-weight: 900; cursor: pointer; }
 
 @media (max-width: 900px) {

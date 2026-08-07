@@ -12,6 +12,7 @@ export const orders = sqliteTable("orders", {
   paymentMethod: text("payment_method").notNull().default("N\u00e3o informado"),
   cashChangeChoice: text("cash_change_choice").notNull().default(""),
   cashAmountCents: integer("cash_amount_cents"),
+  orderObservation: text("order_observation").notNull().default(""),
   itemsJson: text("items_json").notNull(),
   total: integer("total_cents").notNull(),
   status: text("status").notNull().default("novo"),

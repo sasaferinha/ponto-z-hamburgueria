@@ -12,7 +12,7 @@ type Product = {
 };
 
 type AddOn = { name: string; price: number };
-type CartItem = Product & { id: string; quantity: number; addOns: AddOn[] };
+type CartItem = Product & { id: string; quantity: number; addOns: AddOn[]; observation: string };
 
 const categories = [
   { id: "padrao", label: "Tradicionais" },
@@ -255,6 +255,8 @@ export default function Home() {
   const [cartOpen, setCartOpen] = useState(false);
   const [customizing, setCustomizing] = useState<Product | null>(null);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [itemObservation, setItemObservation] = useState("");
+  const [orderObservation, setOrderObservation] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [orderMode, setOrderMode] = useState<"entrega" | "retirada" | "local">("entrega");
@@ -309,6 +311,7 @@ export default function Home() {
         ...product,
         id: product.name,
         addOns: [],
+        observation: "",
         quantity: (current[product.name]?.quantity ?? 0) + 1,
       },
     }));
@@ -320,6 +323,7 @@ export default function Home() {
       return;
     }
     setSelectedAddOns([]);
+    setItemObservation("");
     setCustomizing(product);
   };
 
@@ -333,18 +337,21 @@ export default function Home() {
     if (!customizing) return;
     const extras = currentAddOns.filter((addOn) => selectedAddOns.includes(addOn.name));
     const signature = extras.map((addOn) => addOn.name).sort().join("+") || "sem-adicional";
-    const id = `${customizing.name}::${signature}`;
+    const observation = itemObservation.trim();
+    const id = `${customizing.name}::${signature}::${observation || "sem-observacao"}`;
     setCart((current) => ({
       ...current,
       [id]: {
         ...customizing,
         id,
         addOns: extras,
+        observation,
         quantity: (current[id]?.quantity ?? 0) + 1,
       },
     }));
     setCustomizing(null);
     setSelectedAddOns([]);
+    setItemObservation("");
     setCartOpen(true);
   };
 
@@ -366,6 +373,7 @@ export default function Home() {
       return [
         `• ${item.quantity}x ${item.name} — ${money(item.price * item.quantity)}`,
         ...item.addOns.map((addOn) => `   + ${addOn.name} — ${money(addOn.price)} por lanche`),
+        ...(item.observation ? [`   Observação: ${item.observation}`] : []),
       ];
     });
     const message = [
@@ -390,6 +398,7 @@ export default function Home() {
       ...(orderMode !== "local" && paymentMethod === "Dinheiro"
         ? [cashChangeChoice === "yes" ? `Troco para: ${money(cashAmountValue)}` : "Troco: não precisa"]
         : []),
+      ...(orderObservation.trim() ? [`Observação do pedido: ${orderObservation.trim()}`] : []),
     ].join("\n");
     const whatsappWindow = window.open("about:blank", "_blank");
     try {
@@ -399,9 +408,10 @@ export default function Home() {
         body: JSON.stringify({
           customerName, customerPhone: customerPhoneDigits, orderMode, neighborhood, street, addressDetails, paymentMethod,
           cashChangeChoice, cashAmount: cashChangeChoice === "yes" ? cashAmountValue : undefined,
+          orderObservation: orderObservation.trim(),
           total: orderTotal,
           items: [
-            ...Object.values(cart).map(({ name, quantity, price, addOns }) => ({ name, quantity, price, addOns })),
+            ...Object.values(cart).map(({ name, quantity, price, addOns, observation }) => ({ name, quantity, price, addOns, observation })),
             ...(orderMode === "entrega" && deliveryFee !== undefined
               ? [{ name: "Taxa de entrega", quantity: 1, price: deliveryFee, addOns: [] }]
               : []),
@@ -586,6 +596,10 @@ export default function Home() {
                 );
               })}
             </div>
+            <label className="item-observation">
+              <span>Tem alguma observação sobre este item? (opcional)</span>
+              <textarea value={itemObservation} onChange={(event) => setItemObservation(event.target.value)} placeholder="Ex.: sem cebola, molho separado" maxLength={200} rows={3} />
+            </label>
             <div className="customizer-total">
               <span>Total deste lanche</span>
               <b>
@@ -626,6 +640,7 @@ export default function Home() {
                         ))}
                       </ul>
                     )}
+                    {item.observation && <small className="cart-observation">Observação: {item.observation}</small>}
                   </div>
                   <div className="stepper">
                     <button onClick={() => change(item.id, -1)}>−</button>
@@ -814,6 +829,10 @@ export default function Home() {
                       </div>
                     )}
                   </fieldset>}
+                  <label>
+                    <span>Tem alguma observação sobre o pedido? (opcional)</span>
+                    <textarea value={orderObservation} onChange={(event) => setOrderObservation(event.target.value)} placeholder="Escreva aqui sua observação geral" maxLength={300} rows={3} />
+                  </label>
                 </section>
                 <div className="order-summary">
                   <div><span>Subtotal dos itens</span><b>{money(total)}</b></div>

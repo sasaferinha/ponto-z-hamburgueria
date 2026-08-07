@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type Item = { name: string; quantity: number; price: number; addOns: { name: string; price: number }[] };
+type Item = { name: string; quantity: number; price: number; addOns: { name: string; price: number }[]; observation?: string };
 type Order = {
   id: number; customerName: string; customerPhone: string; orderMode: string; neighborhood: string; street: string;
   addressDetails: string; paymentMethod: string; cashChangeChoice: string; cashAmountCents: number | null;
-  itemsJson: string; total: number; status: string; viewed: boolean; createdAt: string;
+  orderObservation: string; itemsJson: string; total: number; status: string; viewed: boolean; createdAt: string;
 };
 
 const statusLabels: Record<string, string> = {
@@ -130,17 +130,17 @@ export default function AdminPage() {
     const productItems = items.filter((item) => item.name !== "Taxa de entrega");
     const popup = window.open("", "_blank", "width=420,height=720");
     if (!popup) return;
-    const rows = productItems.map((item) => `<div class="item"><b>${item.quantity}x ${item.name}</b><span>${money(Math.round(item.price * item.quantity * 100))}</span></div>${item.addOns.map((a) => `<small>+ ${a.name} — ${money(Math.round(a.price * 100))}${item.quantity > 1 ? " cada" : ""}</small>`).join("")}`).join("");
+    const rows = productItems.map((item) => `<div class="item"><b>${item.quantity}x ${item.name}</b><span>${money(Math.round(item.price * item.quantity * 100))}</span></div>${item.addOns.map((a) => `<small>+ ${a.name} — ${money(Math.round(a.price * 100))}${item.quantity > 1 ? " cada" : ""}</small>`).join("")}${item.observation ? `<small class="obs"><b>Observação:</b> ${item.observation}</small>` : ""}`).join("");
     const fulfillmentDetails = order.orderMode === "entrega"
       ? `<br><b>Endereço:</b> ${order.street}, ${order.addressDetails || "s/n"} - ${order.neighborhood}<br><b>Taxa de entrega:</b> ${deliveryItem ? money(Math.round(deliveryItem.price * 100)) : "A confirmar"}<br><b>Tempo estimado:</b> ${storeSettings.deliveryTime}`
       : order.orderMode === "local" ? "" : `<br><b>Tempo estimado para retirada:</b> ${storeSettings.pickupTime}`;
     const paymentDetails = order.orderMode === "local" ? "" : `<br><b>Forma de pagamento:</b> ${order.paymentMethod || "N\u00e3o informado"}${order.paymentMethod === "Dinheiro" ? order.cashChangeChoice === "yes" && order.cashAmountCents ? `<br><b>Troco para:</b> ${money(order.cashAmountCents)}` : `<br><b>Troco:</b> N\u00e3o precisa` : ""}`;
-    popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido #${order.id}</title><style>body{font:14px Arial;max-width:320px;margin:20px auto;color:#111}.head{text-align:center;border-bottom:2px dashed #111;padding-bottom:12px}.item{display:flex;justify-content:space-between;margin-top:12px;gap:12px}small{display:block;margin:3px 0 0 14px}.info{border-top:2px dashed #111;margin-top:15px;padding-top:12px;line-height:1.7}.total{display:flex;justify-content:space-between;font-size:18px;border-top:2px solid #111;margin-top:15px;padding-top:10px}@media print{body{margin:0}}</style></head><body><div class="head"><b>PONTO Z HAMBURGUERIA</b><h2>Pedido #${order.id}</h2><span>${new Date(order.createdAt + "Z").toLocaleString("pt-BR")}</span></div>${rows}<div class="info"><b>Cliente:</b> ${order.customerName}${order.customerPhone ? `<br><b>WhatsApp:</b> ${order.customerPhone}` : ""}<br><b>Recebimento:</b> ${order.orderMode === "entrega" ? "Entrega" : order.orderMode === "local" ? "Comer no estabelecimento" : "Retirada"}${fulfillmentDetails}${paymentDetails}</div><div class="total"><b>Total</b><b>${money(order.total)}</b></div><script>window.onload=()=>window.print()<\/script></body></html>`);
+    popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido #${order.id}</title><style>body{font:14px Arial;max-width:320px;margin:20px auto;color:#111}.head{text-align:center;border-bottom:2px dashed #111;padding-bottom:12px}.item{display:flex;justify-content:space-between;margin-top:12px;gap:12px}small{display:block;margin:3px 0 0 14px}.obs{margin-top:6px}.info{border-top:2px dashed #111;margin-top:15px;padding-top:12px;line-height:1.7}.total{display:flex;justify-content:space-between;font-size:18px;border-top:2px solid #111;margin-top:15px;padding-top:10px}@media print{body{margin:0}}</style></head><body><div class="head"><b>PONTO Z HAMBURGUERIA</b><h2>Pedido #${order.id}</h2><span>${new Date(order.createdAt + "Z").toLocaleString("pt-BR")}</span></div>${rows}<div class="info"><b>Cliente:</b> ${order.customerName}${order.customerPhone ? `<br><b>WhatsApp:</b> ${order.customerPhone}` : ""}<br><b>Recebimento:</b> ${order.orderMode === "entrega" ? "Entrega" : order.orderMode === "local" ? "Comer no estabelecimento" : "Retirada"}${fulfillmentDetails}${paymentDetails}${order.orderObservation ? `<br><b>Observação do pedido:</b> ${order.orderObservation}` : ""}</div><div class="total"><b>Total</b><b>${money(order.total)}</b></div><script>window.onload=()=>window.print()<\/script></body></html>`);
     popup.document.close();
     if (order.status === "novo" && order.customerPhone) {
       const digits = order.customerPhone.replace(/\D/g, "");
       const whatsappPhone = digits.startsWith("55") && /^\d{12,13}$/.test(digits) ? digits : `55${digits}`;
-      const message = `Ol\u00e1, ${order.customerName}! Seu pedido #${order.id} na Ponto Z j\u00e1 est\u00e1 sendo preparado.`;
+      const message = `Olá, ${order.customerName}! Seu pedido #${order.id} na Ponto Z já foi recebido e está sendo preparado.`;
       window.open(`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
     }
   };
@@ -208,11 +208,13 @@ export default function AdminPage() {
         {group.orders.map((order) => { const items = JSON.parse(order.itemsJson) as Item[]; return (
           <article className={`order-card status-${order.status} ${order.viewed ? "viewed" : "not-viewed"}`} key={order.id} onClick={() => { if (!order.viewed) void updateViewed(order.id, true); }}>
             <div className="order-head"><div><span>Pedido #{order.id}</span><h2>{order.customerName}</h2></div><time>{new Date(order.createdAt + "Z").toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</time></div>
-            <div className="order-items">{items.map((item, index) => <div key={`${item.name}-${index}`}><p><b>{item.quantity}x</b> {item.name}</p>{item.addOns.map((addOn) => <small key={addOn.name}>+ {addOn.name} — {money(Math.round(addOn.price * 100))}{item.quantity > 1 ? " cada" : ""}</small>)}</div>)}</div>
+            <div className="order-items">{items.map((item, index) => <div key={`${item.name}-${index}`}><p><b>{item.quantity}x</b> {item.name}</p>{item.addOns.map((addOn) => <small key={addOn.name}>+ {addOn.name} — {money(Math.round(addOn.price * 100))}{item.quantity > 1 ? " cada" : ""}</small>)}{item.observation && <small className="admin-observation"><b>Observação:</b> {item.observation}</small>}</div>)}</div>
+            {order.orderObservation && <div className="order-observation"><b>Observação do pedido</b><span>{order.orderObservation}</span></div>}
             <div className="order-address"><b>{order.orderMode === "entrega" ? "Entrega" : order.orderMode === "local" ? "Comer no estabelecimento" : "Retirada no balcão"}</b>{order.orderMode === "entrega" && <span>{order.street}, {order.addressDetails || "s/n"}<br />{order.neighborhood}</span>}</div>
             <div className="order-total"><span>Total do pedido</span><b>{money(order.total)}</b></div>
             <label className="status-select"><span>Situação</span><select value={order.status} onChange={(event) => void updateStatus(order.id, event.target.value)}>{Object.entries(statusLabels).map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
             {group.kind === "new" && <button className="finish-order" onClick={() => void updateStatus(order.id, "finalizado")}>Finalizar pedido</button>}
+            {group.kind === "new" && <button className="cancel-order" onClick={() => void updateStatus(order.id, "cancelado")}>Marcar como cancelado</button>}
             <button className="print-order" onClick={() => printOrder(order)}>{order.status === "novo" && order.customerPhone ? "Imprimir e avisar cliente" : "Reimprimir comanda"}</button>
           </article>
         ); })}</div>}
